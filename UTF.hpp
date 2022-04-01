@@ -306,8 +306,6 @@ struct UTF {
         for (int i=0; i<dstr.size(); i++) {
             char buf[10];
             int k = one32to8(dstr[i], buf);
-            if (len>=0x2ef80 && len<=0x2ef80+10)
-                printf("cp==%x\n",i);
             for (int i=0; i<k; i++) {
                 result[len] = buf[i];
                 len++;
