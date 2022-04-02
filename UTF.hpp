@@ -168,22 +168,22 @@ struct UTF {
 
     int getU16Len(const std::string &str) {
         int result = 0;
-        const char *s = str.c_str();
-        const char *end = s;
-        while (end-s<str.size()) {
-            uint32_t d = one8to32(s,&end);
+        const char *s;
+        const char *sc = s = str.c_str();
+        while (s-sc<str.size()) {
+            uint32_t d = one8to32(s,&s);
             result += one16len(d);
         }
         return result;
     }
 
     int getU8Len(const std::wstring &wstr) {
-        const wchar_t *ws = wstr.c_str();
-        const wchar_t *wend = ws;
+        const wchar_t *wsc;
+        const wchar_t *ws = wsc = wstr.c_str();
         int len = 0;
-        while (wend-ws<wstr.size()) {
-            uint32_t d = one16to32(ws,&wend);
-            char buf[10];
+        while (ws-wsc<wstr.size()) {
+            uint32_t d = one16to32(ws,&ws);
+            char buf[4];
             len += one32to8(d, buf);
         }
         return len;
@@ -209,6 +209,18 @@ struct UTF {
     std::wstring u8to16(const std::string &str) {
         std::wstring result;
         result.resize(getU16Len(str));
+        const char *sc;
+        const char *s = sc = str.c_str();
+        int len = 0;
+        while (s-sc<str.size()) {
+            uint32_t d = one8to32(s,&s);
+            wchar_t pair[2];
+            int k = one32to16(d, pair);
+            result[len] = pair[0];
+            if (k>1)
+                result[len+1] = pair[1];
+            len += k;
+        }
         return result;
     }
 
@@ -225,12 +237,12 @@ struct UTF {
     std::string u16to8(const std::wstring &wstr) {
         std::string result;
         result.resize(getU8Len(wstr));
-        const wchar_t *ws = wstr.c_str();
-        const wchar_t *wend = ws;
+        const wchar_t *wsc;
+        const wchar_t *ws = wsc = wstr.c_str();
         int len = 0;
-        while (wend-ws<wstr.size()) {
-            uint32_t d = one16to32(ws,&wend);
-            char buf[10];
+        while (ws-wsc<wstr.size()) {
+            uint32_t d = one16to32(ws,&ws);
+            char buf[4];
             int k = one32to8(d, buf);
             for (int i=0; i<k; i++) {
                 result[len] = buf[i];
