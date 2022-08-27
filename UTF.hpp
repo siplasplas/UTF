@@ -70,60 +70,62 @@ struct UTF {
             return 1;
     }
 
-    uint32_t one8to32(const char *s, const char **end) {
-        *end = s;
-        uint8_t b0 = **end;
-        (*end)++;
-        if ((b0 & 0x80) == 0)
-            return b0;
-        else if ((b0 & 0x20) == 0) {
-            uint8_t b1 = **end;
-            (*end)++;
-            if ((b1 & 0b11000000) != 128) {
-                errors++;
-                return 0xfffd;
-            } else {
-                if (!(b0 & 31)){
-                    errambig++;
-                    return 0xfffd;
-                }
-                return (b1 & 63) | ((int) (b0 & 31) << 6);
-            }
-        } else if ((b0 & 0x10) == 0) {
-            uint8_t b1 = **end;
-            (*end)++;
-            uint8_t b2 = **end;
-            (*end)++;
-            if ((b1 & 0b11000000) != 128 || (b2 & 0b11000000) != 128) {
-                errors++;
-                return 0xfffd;
-            } else {
-                if (!(b0 & 15)&& !(b1 & 63)) {
-                    errambig++;
-                    return 0xfffd;
-                }
-                return (b2 & 63) | ((int) (b1 & 63) << 6) | ((int) (b0 & 15) << 12);
-            }
-        } else if ((b0 & 0x08) == 0) {
-            uint8_t b1 = **end;
-            (*end)++;
-            uint8_t b2 = **end;
-            (*end)++;
-            uint8_t b3 = **end;
-            (*end)++;
-            if ((b1 & 0b11000000) != 128 || (b2 & 0b11000000) != 128 || (b3 & 0b11000000) != 128) {
-                errors++;
-                return 0xfffd;
-            } else {
-                if (!(b0 & 7)&& !(b1 & 63) && !(b2 & 63)) {
-                    errambig++;
-                    return 0xfffd;
-                }
-                return (b3 & 63) | ((int) (b2 & 63) << 6) | ((int) (b1 & 63) << 12) | ((int) (b0 & 7) << 18);
-            }
-        } else {
-            errors++;
+    static bool insideU8code(unsigned char b) {
+        return (b & 0b11000000) == 0b10000000;
+    }
+    /*
+     * By first byte:
+     * 0: inside UTF8 multibyte
+     * 1: ASCII
+     * 2..6 len
+     * 7 bad 11111110
+     * 8 bad 11111111
+     * */
+    static int determineU8Len(unsigned char b) {
+        if ((b & 0b10000000) == 0) return 1;
+        if (insideU8code(b)) return 0;
+        int mask = 0b00100000;
+        for (int len=2; len<8; len++) {
+            if ((b & mask) == 0) return len;
+            mask >>= 1;
+        }
+        return 8;
+    }
+
+    static bool isCorrectU8code(const char *s, const char *eos, int &len) {
+        len = 1;
+        if (insideU8code(*s))
+            return false;
+        int expectLen = determineU8Len(*s);
+        if (expectLen>6)
+            return false;
+        for (int i=2; i<=expectLen; i++) {
+            s++;
+            if (s>=eos)
+                return false;
+            if (!insideU8code(*s))
+                return false;
+            len++;
+        }
+        return true;
+    }
+
+    uint32_t one8to32(const char *s, const char *eos, const char **end) {
+        int len;
+        bool isOK = isCorrectU8code(s, eos, len);
+        *end = s+len;
+        if (!isOK)
             return 0xfffd;
+        if (len==1)
+            return *s;
+        else {
+            assert(len>1 && len<=6);
+            int mask0 = 127 >> len;
+            int d = *s & mask0;
+            for (int i=1; i<len; i++) {
+                d = (d <<6) | s[i] & 63;
+            }
+            return d;
         }
     }
 
@@ -170,8 +172,9 @@ struct UTF {
         int result = 0;
         const char *s;
         const char *sc = s = str.c_str();
+        const char *eos = sc+str.length();
         while (s-sc<str.size()) {
-            uint32_t d = one8to32(s,&s);
+            uint32_t d = one8to32(s,eos,&s);
             result += one16len(d);
         }
         return result;
@@ -198,11 +201,16 @@ struct UTF {
 
     int getU16Len(const dstring &dstr) {
         int len16 = 0;
-        for (int i=0; i<dstr.size(); i++)
-            if (dstr[i]<0x10000)
+        for (int i = 0; i < dstr.size(); i++) {
+            int d = dstr[i];
+            if (isSurrogate(d) || d > MaxCP) {
+                d = 0xFFFD;
+            }
+            if (d < 0x10000)
                 len16++;
             else
-                len16+=2;
+                len16 += 2;
+        }
         return len16;
     }
 
@@ -211,9 +219,10 @@ struct UTF {
         result.resize(getU16Len(str));
         const char *sc;
         const char *s = sc = str.c_str();
+        const char *eos = sc+str.length();
         int len = 0;
         while (s-sc<str.size()) {
-            uint32_t d = one8to32(s,&s);
+            uint32_t d = one8to32(s, eos, &s);
             wchar_t pair[2];
             int k = one32to16(d, pair);
             result[len] = pair[0];
@@ -225,12 +234,13 @@ struct UTF {
     }
 
     dstring u8to32(const std::string &str) {
-        const char *cs = str.c_str();
+        const char *sc = str.c_str();
+        const char *eos = sc + str.length();
         dstring result(getU32Len(str));
         for (int i=0; i<result.size(); i++) {
-            result[i] = one8to32(cs, &cs);
+            result[i] = one8to32(sc, eos, &sc);
         }
-        assert(cs==str.c_str()+str.size());
+        assert(sc == str.c_str() + str.size());
         return result;
     }
 
