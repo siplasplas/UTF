@@ -233,3 +233,21 @@ TEST(utf8errors, onlyHead) {
         EXPECT_EQ(utf.errors, 1);
         EXPECT_EQ(dstr, expect);
 }
+
+TEST(utf8errors, headAndLessBytes) {
+    string str = "a\357\252b";
+    dstring expect{'a',0xfffd, 'b'};
+    UTF utf;
+    dstring dstr = utf.u8to32(str);
+    EXPECT_EQ(utf.errors, 1);
+    EXPECT_EQ(dstr, expect);
+}
+
+TEST(utf8errors, twoHeads) {
+    string str = "a\357\337b";
+    dstring expect{'a',0xfffd, 0xfffd, 'b'};
+    UTF utf;
+    dstring dstr = utf.u8to32(str);
+    EXPECT_EQ(utf.errors, 2);
+    EXPECT_EQ(dstr, expect);
+}
