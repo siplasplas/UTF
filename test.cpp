@@ -4,6 +4,8 @@
 #include <gtest/gtest.h>
 #include "UTF.hpp"
 
+bool skipHard = false;
+
 using namespace std;
 
 dstring fillDstring() {
@@ -18,6 +20,8 @@ dstring fillDstring() {
 }
 
 TEST(Conv, u32to8) {
+    if (skipHard)
+        GTEST_SKIP();
     dstring dstr = fillDstring();
     UTF utf;
     string str = utf.u32to8(dstr);
@@ -34,6 +38,8 @@ TEST(Conv, u32to8) {
 }
 
 TEST(Conv, u32to16) {
+    if (skipHard)
+        GTEST_SKIP();
     dstring dstr = fillDstring();
     UTF utf;
     wstring wstr = utf.u32to16(dstr);
@@ -50,6 +56,8 @@ TEST(Conv, u32to16) {
 }
 
 TEST(Conv, u8to16) {
+    if (skipHard)
+        GTEST_SKIP();
     dstring dstr = fillDstring();
     UTF utf;
     string str = utf.u32to8(dstr);
@@ -67,6 +75,8 @@ TEST(Conv, u8to16) {
 }
 
 TEST(Conv, u16to8) {
+    if (skipHard)
+        GTEST_SKIP();
     dstring dstr = fillDstring();
     UTF utf;
     wstring wstr = utf.u32to16(dstr);
@@ -250,4 +260,32 @@ TEST(utf8errors, twoHeads) {
     dstring dstr = utf.u8to32(str);
     EXPECT_EQ(utf.errors, 2);
     EXPECT_EQ(dstr, expect);
+}
+
+TEST(Find, len6) {
+    string str = "a\375\200\201\202\203\204\205b";
+    const char *s = str.c_str()+1;
+    UTF utf;
+    for (int i=0; i<6; i++) {
+        const char *bs = utf.findUtf8(s + i, s);
+        EXPECT_EQ(bs, s);
+    }
+    for (int i=6; i<=7; i++) {
+        const char *bs = utf.findUtf8(s + i, s);
+        EXPECT_EQ(bs, s + i);
+    }
+}
+
+TEST(Find, len4) {
+    string str = "a\360\200\201\202\203\204\205b";
+    const char *s = str.c_str()+1;
+    UTF utf;
+    for (int i=0; i<4; i++) {
+        const char *bs = utf.findUtf8(s + i, s);
+        EXPECT_EQ(bs, s);
+    }
+    for (int i=4; i<=7; i++) {
+        const char *bs = utf.findUtf8(s + i, s);
+        EXPECT_EQ(bs, s + i);
+    }
 }

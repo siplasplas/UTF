@@ -368,5 +368,44 @@ struct UTF {
         }
         return result;
     }
-};
 
+    /*
+     * back to ss (start stream) or first !insideU8code or
+     * maximal 5 insideU8code
+     * */
+    const char* findUtf8(const char *s, const char *ss) {
+        int len = 6;
+        const char *const start = s;
+        while (s>ss && insideU8code(*s)) {
+            s--;
+            len--;
+            if (!len)
+                return start;
+        }
+        if (determineU8Len(*s)>=start-s+1)
+            return s;
+        else
+            return start;
+    }
+
+    const char* findNextUtf8(const char *s, const char *eos) {
+        assert(s<=eos);
+        if (s==eos)
+            return eos;
+        if (insideU8code(*s))
+            //assume we have at start prevois or on bad char
+            //no real inside UTF8 code
+            return s+1;
+        int expectLen = determineU8Len(*s);
+        if (expectLen>6 || expectLen<2)
+            return s+1;
+        for (int i=2; i<=expectLen; i++) {
+            s++;
+            if (s>=eos)
+                return eos;
+            if (!insideU8code(*s))
+                return s;
+        }
+        return s+1;
+    }
+};
