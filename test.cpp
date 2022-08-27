@@ -17,7 +17,7 @@ dstring fillDstring() {
     return dstr;
 }
 
-/*TEST(Conv, u32to8) {
+TEST(Conv, u32to8) {
     dstring dstr = fillDstring();
     UTF utf;
     string str = utf.u32to8(dstr);
@@ -31,7 +31,7 @@ dstring fillDstring() {
         }
     }
     EXPECT_FALSE(fail32to8);
-} todo */
+}
 
 TEST(Conv, u32to16) {
     dstring dstr = fillDstring();
@@ -49,7 +49,7 @@ TEST(Conv, u32to16) {
     EXPECT_FALSE(fail32to16);
 }
 
-/*TEST(Conv, u8to16) {
+TEST(Conv, u8to16) {
     dstring dstr = fillDstring();
     UTF utf;
     string str = utf.u32to8(dstr);
@@ -64,9 +64,8 @@ TEST(Conv, u32to16) {
         }
     }
     EXPECT_FALSE(fail8to16);
-}todo */
+}
 
-/*
 TEST(Conv, u16to8) {
     dstring dstr = fillDstring();
     UTF utf;
@@ -83,7 +82,7 @@ TEST(Conv, u16to8) {
     }
     EXPECT_FALSE(fail16to8);
 }
- todo */
+
 TEST(Errors, on1) {
     UTF utf;
     string str = "b\xc4\x85k";
