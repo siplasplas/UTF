@@ -254,6 +254,7 @@ struct UTF {
         const char *sc = str.c_str();
         const char *eos = sc + str.length();
         dstring result(getU32Len(str));
+        errors = errambig = 0;
         for (int i=0; i<result.size(); i++) {
             result[i] = one8to32(sc, eos, &sc);
         }
