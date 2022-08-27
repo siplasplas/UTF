@@ -31,7 +31,7 @@ dstring fillDstring() {
         }
     }
     EXPECT_FALSE(fail32to8);
-} todo*/
+} todo */
 
 TEST(Conv, u32to16) {
     dstring dstr = fillDstring();
@@ -178,9 +178,8 @@ TEST(ExceedsUtf16, len4) {
     EXPECT_EQ(wstr, L"a\xfffd\x0062");
 }
 
-/*
 TEST(ExceedsUtf16, len5) {
-    string str = "a\372\200\200\200b";
+    string str = "a\372\200\200\200\200b";
     //11111010 10000000 10000000 10000000 10000000
     //10000000000000000000000000
     dstring expect {'a', 0x2000000, 'b'};
@@ -194,7 +193,7 @@ TEST(ExceedsUtf16, len5) {
 }
 
 TEST(ExceedsUtf16, len6) {
-    string str = "a\372\200\200\200b";
+    string str = "a\375\200\200\200\200\200b";
     //1111110x 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx
     //1000000000000000000000000000000
     dstring expect {'a', 0x40000000, 'b'};
@@ -206,4 +205,3 @@ TEST(ExceedsUtf16, len6) {
     EXPECT_EQ(dstr, expect);
     EXPECT_EQ(wstr, L"a\xfffd\x0062");
 }
-*/

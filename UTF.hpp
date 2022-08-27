@@ -115,8 +115,10 @@ struct UTF {
         int len;
         bool isOK = isCorrectU8code(s, eos, len);
         *end = s+len;
-        if (!isOK)
+        if (!isOK) {
+            errors++;
             return 0xfffd;
+        }
         if (len==1)
             return *s;
         else {
@@ -163,10 +165,12 @@ struct UTF {
 
     int getU32Len(const std::string &str) {
         int result = 0;
-        int n =  0;
-        while (n<str.size()) {
-            result++;
-            n += one8len(str[n]);
+        const char *s;
+        const char *sc = s = str.c_str();
+        const char *eos = sc+str.length();
+        while (s-sc<str.size()) {
+            uint32_t d = one8to32(s,eos,&s);
+            result ++;
         }
         return result;
     }
