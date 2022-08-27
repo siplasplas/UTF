@@ -223,3 +223,13 @@ TEST(ut8errors, inside) {
         EXPECT_EQ(dstr, expect);
     }
 }
+
+//no form 10xxxxxx after head 110xxxxx
+TEST(utf8errors, onlyHead) {
+        string str = "a\337b";
+        dstring expect{'a',0xfffd, 'b'};
+        UTF utf;
+        dstring dstr = utf.u8to32(str);
+        EXPECT_EQ(utf.errors, 1);
+        EXPECT_EQ(dstr, expect);
+}
