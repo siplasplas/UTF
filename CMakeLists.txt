@@ -1,7 +1,12 @@
-cmake_minimum_required(VERSION 3.14)
-project(test)
+cmake_minimum_required(VERSION 3.13)
+# 'Google_test' is the subproject name
+project(Google_Tests_run)
 
-set(CMAKE_CXX_STANDARD 14)
+add_definitions("-Werror=return-type")
 
-add_subdirectory(Boost_tests)
+# 'Google_Tests_run' is the target name
+# 'test1.cpp tests2.cpp' are source files with tests
+add_executable(Google_Tests_run
+        test.cpp)
 
+target_link_libraries(Google_Tests_run gtest gtest_main)
