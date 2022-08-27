@@ -204,3 +204,22 @@ TEST(ExceedsUtf16, len6) {
     EXPECT_EQ(dstr, expect);
     EXPECT_EQ(wstr, L"a\xfffd\x0062");
 }
+
+//form 10xxxxxx without start byte
+TEST(ut8errors, inside) {
+    for (int len=1; len<10; len++) {
+        unsigned char c = 128 + len;
+        string str = "a";
+        dstring expect{'a'};
+        for (int j = 0; j < len; j++) {
+            str += (char) c;
+            expect.push_back(0xfffd);
+        }
+        str+= "b";
+        expect.push_back('b');
+        UTF utf;
+        dstring dstr = utf.u8to32(str);
+        EXPECT_EQ(utf.errors, len);
+        EXPECT_EQ(dstr, expect);
+    }
+}
