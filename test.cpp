@@ -112,7 +112,7 @@ TEST(CorrectUtf8, len2) {
     dstring dstr = utf.u8to32(str);
     wstring wstr = utf.u32to16(dstr);
     EXPECT_EQ(dstr, expect);
-    EXPECT_EQ(wstr, L"a\u056ab");
+    EXPECT_EQ(wstr, L"a\x056a\x0062");
 }
 
 //1110xxxx 10xxxxxx 10xxxxxx

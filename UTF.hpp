@@ -92,6 +92,7 @@ struct UTF {
         return 8;
     }
 
+    /* not check ambiguity in this stage */
     static bool isCorrectU8code(const char *s, const char *eos, int &len) {
         len = 1;
         if (insideU8code(*s))
@@ -122,8 +123,20 @@ struct UTF {
             assert(len>1 && len<=6);
             int mask0 = 127 >> len;
             int d = *s & mask0;
+            int minimal = 0;
             for (int i=1; i<len; i++) {
                 d = (d <<6) | s[i] & 63;
+                if (minimal == 0)
+                    minimal = 0x80;
+                else if (minimal == 0x80)
+                    minimal = 0x800;
+                else
+                    minimal *= 2;
+            }
+            if (d<minimal) {
+                errambig++;
+                errors++;
+                return 0xfffd;
             }
             return d;
         }
