@@ -388,7 +388,7 @@ struct UTF {
             return start;
     }
 
-    const char* findNextUtf8(const char *s, const char *eos) {
+    const char* findNextUtf8AtHeader(const char *s, const char *eos) {
         assert(s<=eos);
         if (s==eos)
             return eos;
@@ -409,8 +409,13 @@ struct UTF {
         return s+1;
     }
 
+    const char* findNextUtf8(const char *s, const char *ss, const char *eos) {
+        const char* headPos = findUtf8(s, ss);
+        return findNextUtf8AtHeader(headPos, eos);
+    }
+
     int64_t determineU8LenExact(const char *s, const char *eos) {
         assert(s<=eos);
-        return findNextUtf8(s, eos) -s;
+        return findNextUtf8AtHeader(s, eos) - s;
     }
 };
