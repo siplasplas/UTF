@@ -388,6 +388,19 @@ struct UTF {
             return start;
     }
 
+    const char* findPrevUtf8AtHeader(const char *s, const char *ss) {
+        return findUtf8(s-1, ss);
+    }
+
+    const char* backNcodes(int N, const char *s, const char *ss) {
+        for (int i=0; i<N; i++) {
+            s = findPrevUtf8AtHeader(s, ss);
+            assert(s>=ss);
+            if (s==ss) break;
+        }
+        return s;
+    }
+
     const char* findNextUtf8AtHeader(const char *s, const char *eos) {
         assert(s<=eos);
         if (s==eos)
