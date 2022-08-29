@@ -289,3 +289,10 @@ TEST(Find, len4) {
         EXPECT_EQ(bs, s + i);
     }
 }
+
+TEST(Len, simple) {
+    string str = "bąk";
+    UTF utf;
+    EXPECT_EQ(utf.getU32Len(str),3);
+    EXPECT_EQ(utf.getU16Len(str),3);
+}
