@@ -393,7 +393,7 @@ struct UTF {
         if (s==eos)
             return eos;
         if (insideU8code(*s))
-            //assume we have at start prevois or on bad char
+            //assume we have at start previus or on bad char
             //no real inside UTF8 code
             return s+1;
         int expectLen = determineU8Len(*s);
@@ -407,5 +407,10 @@ struct UTF {
                 return s;
         }
         return s+1;
+    }
+
+    int64_t determineU8LenExact(const char *s, const char *eos) {
+        assert(s<=eos);
+        return findNextUtf8(s, eos) -s;
     }
 };
