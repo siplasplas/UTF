@@ -414,6 +414,14 @@ struct UTF {
         return findNextUtf8AtHeader(headPos, eos);
     }
 
+    const char* findNextUtf8OrTheSame(const char *s, const char *ss, const char *eos) {
+        const char* headPos = findUtf8(s, ss);
+        if (headPos==s)
+            return s;
+        else
+            return findNextUtf8AtHeader(headPos, eos);
+    }
+
     int64_t determineU8LenExact(const char *s, const char *eos) {
         assert(s<=eos);
         return findNextUtf8AtHeader(s, eos) - s;
