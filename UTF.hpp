@@ -8,6 +8,7 @@
 typedef std::vector<uint32_t> dstring;
 
 struct UTF {
+    const int static MAXCHARLEN = 6;
     int errors = 0;
 /**
  int errambig: check ambiguity against hacker attacks
@@ -98,7 +99,7 @@ struct UTF {
         if (insideU8code(*s))
             return false;
         int expectLen = determineU8Len(*s);
-        if (expectLen>6)
+        if (expectLen > MAXCHARLEN)
             return false;
         for (int i=2; i<=expectLen; i++) {
             s++;
@@ -122,12 +123,12 @@ struct UTF {
         if (len==1)
             return *s;
         else {
-            assert(len>1 && len<=6);
+            assert(len>1 && len<=MAXCHARLEN);
             int mask0 = 127 >> len;
             int d = *s & mask0;
             int minimal = 0;
             for (int i=1; i<len; i++) {
-                d = (d <<6) | s[i] & 63;
+                d = (d << 6) | s[i] & 63;
                 if (minimal == 0)
                     minimal = 0x80;
                 else if (minimal == 0x80)
@@ -374,7 +375,7 @@ struct UTF {
      * maximal 5 insideU8code
      * */
     const char* findUtf8(const char *s, const char *ss) {
-        int len = 6;
+        int len = MAXCHARLEN;
         const char *const start = s;
         while (s>ss && insideU8code(*s)) {
             s--;
@@ -410,7 +411,7 @@ struct UTF {
             //no real inside UTF8 code
             return s+1;
         int expectLen = determineU8Len(*s);
-        if (expectLen>6 || expectLen<2)
+        if (expectLen>MAXCHARLEN || expectLen<2)
             return s+1;
         for (int i=2; i<=expectLen; i++) {
             s++;
