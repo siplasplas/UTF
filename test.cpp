@@ -296,3 +296,46 @@ TEST(Len, simple) {
     EXPECT_EQ(utf.getU32Len(str),3);
     EXPECT_EQ(utf.getU16Len(str),3);
 }
+
+
+TEST(Ncodes, forback) {
+    string str = "bąkαβγAδ";
+    const char *s = str.c_str();
+    const char *sstart = s;
+    const char *send = s+str.length();
+    EXPECT_EQ(*send, 0);
+    EXPECT_EQ(*s, 'b');
+    int actual;
+    UTF utf;
+    s = utf.forwardNcodes(s, 2, send, actual);
+    EXPECT_EQ(*s, 'k');
+    EXPECT_EQ(actual, 2);
+    const char *sinside = s+2;
+    s = utf.forwardNcodes(s, 4, send, actual);
+    EXPECT_EQ(*s, 'A');
+    EXPECT_EQ(actual, 4);
+    s = utf.forwardNcodes(s, 3, send, actual);
+    EXPECT_EQ(*s, 0);
+    EXPECT_EQ(actual, 2);
+    s = utf.forwardNcodes(s, 3, send, actual);
+    EXPECT_EQ(*s, 0);
+    EXPECT_EQ(actual, 0);
+    s = utf.backwardNcodes(s, 2, sstart, actual);
+    EXPECT_EQ(*s, 'A');
+    EXPECT_EQ(actual, 2);
+    s = utf.backwardNcodes(s, 4, sstart, actual);
+    EXPECT_EQ(*s, 'k');
+    EXPECT_EQ(actual, 4);
+    s = utf.backwardNcodes(s, 3, sstart, actual);
+    EXPECT_EQ(*s, 'b');
+    EXPECT_EQ(actual, 2);
+    s = utf.backwardNcodes(s, 3, sstart, actual);
+    EXPECT_EQ(*s, 'b');
+    EXPECT_EQ(actual, 0);
+    s = utf.forwardNcodes(sinside, 3, send, actual);
+    EXPECT_EQ(*s, 'A');
+    EXPECT_EQ(actual, 3);
+    s = utf.backwardNcodes(sinside, 2, sstart, actual);
+    EXPECT_EQ(*s, 'k');
+    EXPECT_EQ(actual, 2);
+}

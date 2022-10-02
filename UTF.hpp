@@ -393,11 +393,28 @@ struct UTF {
         return findUtf8(s-1, ss);
     }
 
-    const char* backNcodes(int N, const char *s, const char *ss) {
+    const char* forwardNcodes(const char *s, int N, const char * send, int& actual) {
+        assert(s<=send);
+        actual = 0;
+        if (s==send) return send;
         for (int i=0; i<N; i++) {
-            s = findPrevUtf8AtHeader(s, ss);
-            assert(s>=ss);
-            if (s==ss) break;
+            s = findNextUtf8AtHeader(s, send);
+            actual++;
+            assert(s<=send);
+            if (s==send) break;
+        }
+        return s;
+    }
+
+    const char* backwardNcodes(const char *s, int N, const char * sstart, int& actual) {
+        assert(s>=sstart);
+        actual = 0;
+        if (s==sstart) return sstart;
+        for (int i=0; i<N; i++) {
+            s = findPrevUtf8AtHeader(s, sstart);
+            actual++;
+            assert(s>=sstart);
+            if (s==sstart) break;
         }
         return s;
     }
