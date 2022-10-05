@@ -419,6 +419,17 @@ struct UTF {
         return s;
     }
 
+    int64_t numCodesBetween(const char *s, const char *s1) {
+        assert(s<=s1);
+        int64_t N = 0;
+        if (s==s1) return 0;
+        while (s<s1) {
+            s = findNextUtf8AtHeader(s, s1);
+            N++;
+        }
+        return N;
+    }
+
     const char* findNextUtf8AtHeader(const char *s, const char *eos) {
         assert(s<=eos);
         if (s==eos)
