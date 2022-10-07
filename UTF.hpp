@@ -164,6 +164,15 @@ struct UTF {
         }
     }
 
+    int getU32Len(const char *s, const char *eos) {
+        int result = 0;
+        while (s < eos) {
+            uint32_t d = one8to32(s,eos,&s);
+            result++;
+        }
+        return result;
+    }
+
     int getU32Len(const std::string &str) {
         int result = 0;
         const char *s;
@@ -171,7 +180,7 @@ struct UTF {
         const char *eos = sc+str.length();
         while (s-sc<str.size()) {
             uint32_t d = one8to32(s,eos,&s);
-            result ++;
+            result++;
         }
         return result;
     }
