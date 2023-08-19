@@ -195,16 +195,19 @@ struct UTF {
         return result;
     }
 
-    int getU16Len(const std::string &str) {
+    int getU16Len(const char* sc, uint32_t len8) {
         int result = 0;
-        const char *s;
-        const char *sc = s = str.c_str();
-        const char *eos = sc+str.length();
-        while (s-sc<str.size()) {
+        const char *s = sc;
+        const char *eos = sc + len8;
+        while (s-sc < len8) {
             uint32_t d = one8to32(s,eos,&s);
             result += one16len(d);
         }
         return result;
+    }
+
+    int getU16Len(const std::string &str) {
+        return getU16Len(str.c_str(), str.size());
     }
 
     int getU8Len(const std::wstring &wstr) {
@@ -241,14 +244,13 @@ struct UTF {
         return len16;
     }
 
-    std::wstring u8to16(const std::string &str) {
+    std::wstring u8to16(const char* sc, uint32_t len8) {
         std::wstring result;
-        result.resize(getU16Len(str));
-        const char *sc;
-        const char *s = sc = str.c_str();
-        const char *eos = sc+str.length();
+        result.resize(getU16Len(sc,len8));
+        const char *s = sc;
+        const char *eos = sc+len8;
         int len = 0;
-        while (s-sc<str.size()) {
+        while (s<eos) {
             uint32_t d = one8to32(s, eos, &s);
             wchar_t pair[2];
             int k = one32to16(d, pair);
@@ -258,6 +260,10 @@ struct UTF {
             len += k;
         }
         return result;
+    }
+
+    std::wstring u8to16(const std::string &str) {
+        return u8to16(str.c_str(), str.size());
     }
 
     dstring u8to32(const std::string &str) {
