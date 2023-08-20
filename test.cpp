@@ -339,3 +339,26 @@ TEST(Ncodes, forback) {
     EXPECT_EQ(*s, 'k');
     EXPECT_EQ(actual, 2);
 }
+
+TEST(Slice, Unicode) {
+    UTF utf;
+    string str = "01.123ąęć1\U00013032А\U00013032БВГДЕαβεζηλ345";
+    wstring wstr = utf.u8to16(str);
+    dstring dstr = utf.u8to32(str);
+    for (int i = -2; i <= (int) dstr.size() + 1; i++) {
+        for (int j = i - 2; j < (int) dstr.size() + 1; j++) {
+            dstring sub32 = utf.substr32(dstr, i, j - i);
+            string sub32s = utf.u32to8(sub32);
+            wstring sub32w = utf.u32to16(sub32);
+            string sub8a = utf.u8to8substr(str, i, j - i);
+            EXPECT_EQ(sub8a, sub32s);
+            string sub8b = utf.u16to8substr(wstr, i, j - i);
+            EXPECT_EQ(sub8b, sub32s);
+            wstring sub16a = utf.u8to16substr(str, i, j - i);
+            EXPECT_EQ(sub16a, sub32w);
+            wstring sub16b = utf.u16to16substr(wstr, i, j - i);
+            EXPECT_EQ(sub16b, sub32w);
+        }
+    }
+
+}
