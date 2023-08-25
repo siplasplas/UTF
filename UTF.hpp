@@ -5,8 +5,6 @@
 #include <vector>
 #include <cassert>
 
-typedef std::vector<uint32_t> dstring;
-
 using u16string_view = std::basic_string_view<char16_t>;
 using u32string_view = std::basic_string_view<char32_t>;
 
@@ -24,7 +22,7 @@ struct UTF {
     int errambig = 0;
     const int MaxCP = 0x10ffff;
 
-    dstring substr32(const dstring &dstr, int start, int len) {
+    std::u32string substr32(const std::u32string &dstr, int start, int len) {
         if (start < 0) {
             len += start;
             start = 0;
@@ -34,7 +32,7 @@ struct UTF {
         end = std::min(end, (int) dstr.size());
         auto first = dstr.begin() + start;
         auto last = dstr.begin() + end;
-        dstring result(first, last);
+        std::u32string result(first, last);
         return result;
     }
 
@@ -380,14 +378,14 @@ struct UTF {
         return u16string_view(startView, endView - startView);
     }
 
-    int getU8Len(const dstring &dstr) {
+    int getU8Len(const std::u32string &dstr) {
         int len8 = 0;
         for (int i=0; i<dstr.size(); i++)
             len8+= one8len(dstr[i]);
         return len8;
     }
 
-    int getU16Len(const dstring &dstr) {
+    int getU16Len(const std::u32string &dstr) {
         int len16 = 0;
         for (int i = 0; i < dstr.size(); i++) {
             int d = dstr[i];
@@ -450,14 +448,14 @@ struct UTF {
         return result;
     }
 
-    dstring u8to32substr(const std::string_view strView, int start, int subLen) {
+    std::u32string u8to32substr(const std::string_view strView, int start, int subLen) {
         if (start < 0) {
             subLen += start;
             start = 0;
         }
         if (subLen <= 0)
             return {};
-        dstring result;
+        std::u32string result;
         result.resize(subLen);
         const char *s = strView.data();
         const char *eos = strView.data() + strView.length();
@@ -506,10 +504,11 @@ struct UTF {
         return result;
     }
 
-    dstring u8to32(const std::string_view str) {
+    std::u32string u8to32(const std::string_view str) {
         const char *sc = str.data();
         const char *eos = sc + str.length();
-        dstring result(getU32Len(str));
+        std::u32string result;
+        result.resize(getU32Len(str));
         errors = errambig = 0;
         for (int i=0; i<result.size(); i++) {
             result[i] = one8to32(sc, eos, &sc);
@@ -612,9 +611,10 @@ struct UTF {
     }
 
 
-    dstring u16to32(const u16string_view wstr) {
+    std::u32string u16to32(const u16string_view wstr) {
         const char16_t *cws = wstr.data();
-        dstring result(getU32Len(wstr));
+        std::u32string result;
+        result.resize(getU32Len(wstr));
         for (int i=0; i<result.size(); i++) {
             result[i] = one16to32(cws, &cws);
         }
@@ -655,7 +655,7 @@ struct UTF {
         }
     }
 
-    std::string u32to8(const dstring &dstr) {
+    std::string u32to8(const std::u32string &dstr) {
         std::string result;
         result.resize(getU8Len(dstr));
         int len = 0;
@@ -670,7 +670,7 @@ struct UTF {
         return result;
     }
 
-    std::u16string u32to16(const dstring &dstr) {
+    std::u16string u32to16(const std::u32string &dstr) {
         std::u16string result;
         result.resize(getU16Len(dstr));
         int len = 0;
