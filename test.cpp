@@ -363,3 +363,29 @@ TEST(Substr, Unicode) {
         }
     }
 }
+
+TEST(Subview, Unicode) {
+    UTF utf;
+    string str = "01.123ąęć1\U00013032А\U00013032БВГДЕαβεζηλ345";
+    auto view8 = std::string_view(str);
+    wstring wstr = utf.u8to16(str);
+    auto view16 = std::wstring_view(wstr);
+    dstring dstr = utf.u8to32(str);
+    for (int i = -2; i <= (int) dstr.size() + 1; i++) {
+        for (int j = i - 2; j < (int) dstr.size() + 1; j++) {
+            dstring sub32to32 = utf.substr32(dstr, i, j - i);
+            std::string sub8 = utf.u32to8(sub32to32);
+            std::wstring sub16 = utf.u32to16(sub32to32);
+            auto subview8 = std::string_view(sub8);
+            auto subview16 = std::wstring_view(sub16);
+            auto subview8a = utf.u8subview(str, i, j - i);
+            auto subview8b = utf.u8subview(view8, i, j - i);
+            auto subview16a = utf.u16subview(wstr, i, j - i);
+            auto subview16b = utf.u16subview(view16, i, j - i);
+            EXPECT_EQ(subview8a, subview8);
+            EXPECT_EQ(subview8b, subview8);
+            EXPECT_EQ(subview16a, subview16);
+            EXPECT_EQ(subview16b, subview16);
+        }
+    }
+}

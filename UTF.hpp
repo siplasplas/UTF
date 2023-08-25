@@ -262,6 +262,10 @@ struct UTF {
         return result;
     }
 
+    std::string_view u8subview(const std::string_view view, int start, int subLen) {
+        return u8subview(view.data(), view.length(), start, subLen);
+    }
+
     std::string_view u8subview(const char *sc, uint32_t len8, int start, int subLen) {
         if (start < 0) {
             subLen += start;
@@ -274,18 +278,20 @@ struct UTF {
         const char *startView = nullptr;
         const char *endView = nullptr;
         while (s - sc < len8) {
-            uint32_t d = one8to32(s, eos, &s);
             if (dcounter >= start)
                 if (!startView)
                     startView = s;
+            uint32_t d = one8to32(s, eos, &s);
             dcounter++;
             if (dcounter == start + subLen) {
                 endView = s;
+                break;
             }
         }
         if (!endView)
             endView = eos;
-        return std::string_view(startView, endView - startView);
+        std::string_view result(startView, endView - startView);
+        return result;
     }
 
     int getU16Len(const std::string &str) {
@@ -348,6 +354,10 @@ struct UTF {
         return len;
     }
 
+    std::wstring_view u16subview(const std::wstring_view view, int start, int subLen) {
+        return u16subview(view.data(), view.length(), start, subLen);
+    }
+
     std::wstring_view u16subview(const wchar_t *wsc, uint32_t len16, int start, int subLen) {
         if (start < 0) {
             subLen += start;
@@ -360,13 +370,15 @@ struct UTF {
         const wchar_t *endView = nullptr;
         int dcounter = 0;
         while (ws - wsc < len16) {
-            uint32_t d = one16to32(ws, &ws);
             if (dcounter >= start)
                 if(!startView)
                     startView = ws;
+            uint32_t d = one16to32(ws, &ws);
             dcounter++;
-            if (dcounter == start + subLen)
+            if (dcounter == start + subLen) {
                 endView = ws;
+                break;
+            }
         }
         if (!endView)
             endView = wsc+len16;
