@@ -187,10 +187,10 @@ struct UTF {
         return result;
     }
 
-    int getU32Len(const std::string &str) {
+    int getU32Len(const std::string_view str) {
         int result = 0;
         const char *s;
-        const char *sc = s = str.c_str();
+        const char *sc = s = str.data();
         const char *eos = sc+str.length();
         while (s-sc<str.size()) {
             uint32_t d = one8to32(s,eos,&s);
@@ -294,8 +294,8 @@ struct UTF {
         return result;
     }
 
-    int getU16Len(const std::string &str) {
-        return getU16Len(str.c_str(), str.size());
+    int getU16Len(const std::string_view str) {
+        return getU16Len(str.data(), str.size());
     }
 
     int getU8Len(const std::wstring &wstr) {
@@ -481,16 +481,16 @@ struct UTF {
         return result;
     }
 
-    std::wstring u8to16(const std::string &str) {
-        return u8to16(str.c_str(), str.size());
+    std::wstring u8to16(const std::string_view str) {
+        return u8to16(str.data(), str.size());
     }
 
-    std::wstring u8to16substr(const std::string &str, int start, int subLen) {
-        return u8to16substr(str.c_str(), str.size(), start, subLen);
+    std::wstring u8to16substr(const std::string_view str, int start, int subLen) {
+        return u8to16substr(str.data(), str.size(), start, subLen);
     }
 
-    dstring u8to32substr(const std::string &str, int start, int subLen) {
-        return u8to32substr(str.c_str(), str.size(), start, subLen);
+    dstring u8to32substr(const std::string_view str, int start, int subLen) {
+        return u8to32substr(str.data(), str.size(), start, subLen);
     }
 
     std::string u8to8substr(const char *sc, uint32_t len8, int start, int subLen) {
@@ -523,19 +523,19 @@ struct UTF {
         return result;
     }
 
-    std::string u8to8substr(const std::string &str, int start, int subLen) {
-        return u8to8substr(str.c_str(), str.size(), start, subLen);
+    std::string u8to8substr(const std::string_view str, int start, int subLen) {
+        return u8to8substr(str.data(), str.size(), start, subLen);
     }
 
-    dstring u8to32(const std::string &str) {
-        const char *sc = str.c_str();
+    dstring u8to32(const std::string_view str) {
+        const char *sc = str.data();
         const char *eos = sc + str.length();
         dstring result(getU32Len(str));
         errors = errambig = 0;
         for (int i=0; i<result.size(); i++) {
             result[i] = one8to32(sc, eos, &sc);
         }
-        assert(sc == str.c_str() + str.size());
+        assert(sc == str.data() + str.size());
         return result;
     }
 
