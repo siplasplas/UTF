@@ -48,7 +48,7 @@ struct UTF {
         return 4;
     }
 
-    int one8len(uint32_t d) {
+    int one8len(char32_t d) {
         if (d <= 0x7f)
             return 1;
         else if (d <= 0x7ff)
@@ -59,7 +59,7 @@ struct UTF {
             return 4;
     }
 
-    int one16len(uint32_t d) {
+    int one16len(char32_t d) {
         if (d < 0x10000)
             return 1;
         else
@@ -127,7 +127,7 @@ struct UTF {
         return true;
     }
 
-    uint32_t one8to32(const char *s, const char *eos, const char **end) {
+    char32_t one8to32(const char *s, const char *eos, const char **end) {
         int len;
         bool isOK = isCorrectU8code(s, eos, len);
         *end = s+len;
@@ -140,7 +140,7 @@ struct UTF {
         else {
             assert(len>1 && len<=MAXCHARLEN);
             int mask0 = 127 >> len;
-            int d = *s & mask0;
+            char32_t d = *s & mask0;
             int minimal = 0;
             for (int i=1; i<len; i++) {
                 d = (d << 6) | s[i] & 63;
@@ -151,7 +151,7 @@ struct UTF {
                 else
                     minimal *= 2;
             }
-            if (d<minimal) {
+            if (d < minimal) {
                 errambig++;
                 errors++;
                 return 0xfffd;
@@ -182,7 +182,7 @@ struct UTF {
     int getU32Len(const char *s, const char *eos) {
         int result = 0;
         while (s < eos) {
-            uint32_t d = one8to32(s,eos,&s);
+            char32_t d = one8to32(s,eos,&s);
             result++;
         }
         return result;
@@ -194,7 +194,7 @@ struct UTF {
         const char *sc = s = str.data();
         const char *eos = sc+str.length();
         while (s-sc<str.size()) {
-            uint32_t d = one8to32(s,eos,&s);
+            char32_t d = one8to32(s,eos,&s);
             result++;
         }
         return result;
@@ -215,7 +215,7 @@ struct UTF {
         const char *s = strView.data();
         const char *eos = strView.data() + strView.length();
         while (s < eos) {
-            uint32_t d = one8to32(s,eos,&s);
+            char32_t d = one8to32(s,eos,&s);
             result += one16len(d);
         }
         return result;
@@ -232,7 +232,7 @@ struct UTF {
         const char *eos = strView.data() + strView.length();
         int dcounter = 0;
         while (s < eos) {
-            uint32_t d = one8to32(s, eos, &s);
+            char32_t d = one8to32(s, eos, &s);
             if (dcounter >= start)
                 result += one16len(d);
             dcounter++;
@@ -253,7 +253,7 @@ struct UTF {
         const char *eos = strView.data() + strView.length();
         int dcounter = 0;
         while (s < eos) {
-            uint32_t d = one8to32(s, eos, &s);
+            char32_t d = one8to32(s, eos, &s);
             if (dcounter >= start)
                 result++;
             dcounter++;
@@ -274,7 +274,7 @@ struct UTF {
         const char *eos = strView.data() + strView.length();
         int dcounter = 0;
         while (s  < eos) {
-            uint32_t d = one8to32(s, eos, &s);
+            char32_t d = one8to32(s, eos, &s);
             if (dcounter >= start)
                 result += one8len(d);
             dcounter++;
@@ -299,7 +299,7 @@ struct UTF {
             if (dcounter >= start)
                 if (!startView)
                     startView = s;
-            uint32_t d = one8to32(s, eos, &s);
+            char32_t d = one8to32(s, eos, &s);
             dcounter++;
             if (dcounter == start + subLen) {
                 endView = s;
@@ -317,7 +317,7 @@ struct UTF {
         const char16_t *ws = wsc = wstr.data();
         int len = 0;
         while (ws-wsc<wstr.size()) {
-            uint32_t d = one16to32(ws,&ws);
+            char32_t d = one16to32(ws,&ws);
             len += one8len(d);
         }
         return len;
@@ -335,7 +335,7 @@ struct UTF {
         int len = 0;
         int dcounter = 0;
         while (ws - wsc < wstr.size()) {
-            uint32_t d = one16to32(ws, &ws);
+            char32_t d = one16to32(ws, &ws);
             if (dcounter >= start)
                 len += one8len(d);
             dcounter++;
@@ -359,7 +359,7 @@ struct UTF {
         int len = 0;
         int dcounter = 0;
         while (ws - wsc < len16) {
-            uint32_t d = one16to32(ws, &ws);
+            char32_t d = one16to32(ws, &ws);
             if (dcounter >= start)
                 len += one16len(d);
             dcounter++;
@@ -387,7 +387,7 @@ struct UTF {
             if (dcounter >= start)
                 if(!startView)
                     startView = ws;
-            uint32_t d = one16to32(ws, &ws);
+            char32_t d = one16to32(ws, &ws);
             dcounter++;
             if (dcounter == start + subLen) {
                 endView = ws;
@@ -428,7 +428,7 @@ struct UTF {
         const char *eos = strView.data() + strView.length();
         int len = 0;
         while (s<eos) {
-            uint32_t d = one8to32(s, eos, &s);
+            char32_t d = one8to32(s, eos, &s);
             char16_t pair[2];
             int k = one32to16(d, pair);
             result[len] = pair[0];
@@ -453,7 +453,7 @@ struct UTF {
         int len = 0;
         int dcounter = 0;
         while (s < eos) {
-            uint32_t d = one8to32(s, eos, &s);
+            char32_t d = one8to32(s, eos, &s);
             char16_t pair[2];
             if (dcounter >= start) {
                 int k = one32to16(d, pair);
@@ -483,7 +483,7 @@ struct UTF {
         int len = 0;
         int dcounter = 0;
         while (s < eos) {
-            uint32_t d = one8to32(s, eos, &s);
+            char32_t d = one8to32(s, eos, &s);
             if (dcounter >= start) {
                 result[len] = d;
                 len++;
@@ -509,7 +509,7 @@ struct UTF {
         int len = 0;
         int dcounter = 0;
         while (s < eos) {
-            uint32_t d = one8to32(s, eos, &s);
+            char32_t d = one8to32(s, eos, &s);
             if (dcounter >= start) {
                 char buf[4];
                 int k = one32to8(d, buf);
@@ -545,7 +545,7 @@ struct UTF {
         const char16_t *ws = wsc = wstr.data();
         int len = 0;
         while (ws-wsc<wstr.size()) {
-            uint32_t d = one16to32(ws,&ws);
+            char32_t d = one16to32(ws,&ws);
             char buf[4];
             int k = one32to8(d, buf);
             for (int i=0; i<k; i++) {
@@ -570,7 +570,7 @@ struct UTF {
         int len = 0;
         int dcounter = 0;
         while (ws - wsc < wstr.size()) {
-            uint32_t d = one16to32(ws, &ws);
+            char32_t d = one16to32(ws, &ws);
             if (dcounter >= start) {
                 char buf[4];
                 int k = one32to8(d, buf);
@@ -600,7 +600,7 @@ struct UTF {
         int len = 0;
         int dcounter = 0;
         while (ws - wsc < wstr.size()) {
-            uint32_t d = one16to32(ws, &ws);
+            char32_t d = one16to32(ws, &ws);
             char16_t pair[2];
             if (dcounter >= start) {
                 int k = one32to16(d, pair);
