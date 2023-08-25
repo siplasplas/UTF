@@ -262,6 +262,32 @@ struct UTF {
         return result;
     }
 
+    std::string_view u8subview(const char *sc, uint32_t len8, int start, int subLen) {
+        if (start < 0) {
+            subLen += start;
+            start = 0;
+        }
+        if (subLen <= 0) return {};
+        const char *s = sc;
+        const char *eos = sc + len8;
+        int dcounter = 0;
+        const char *startView = nullptr;
+        const char *endView = nullptr;
+        while (s - sc < len8) {
+            uint32_t d = one8to32(s, eos, &s);
+            if (dcounter >= start)
+                if (!startView)
+                    startView = s;
+            dcounter++;
+            if (dcounter == start + subLen) {
+                endView = s;
+            }
+        }
+        if (!endView)
+            endView = eos;
+        return std::string_view(startView, endView - startView);
+    }
+
     int getU16Len(const std::string &str) {
         return getU16Len(str.c_str(), str.size());
     }
