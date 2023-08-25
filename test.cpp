@@ -340,7 +340,7 @@ TEST(Ncodes, forback) {
     EXPECT_EQ(actual, 2);
 }
 
-TEST(Slice, Unicode) {
+TEST(Substr, Unicode) {
     UTF utf;
     string str = "01.123ąęć1\U00013032А\U00013032БВГДЕαβεζηλ345";
     wstring wstr = utf.u8to16(str);
