@@ -22,11 +22,13 @@ struct UTF {
     const int MaxCP = 0x10ffff;
 
     dstring substr32(const dstring &dstr, int start, int len) {
+        if (start < 0) {
+            len += start;
+            start = 0;
+        }
+        if (len <= 0) return {};
         int end = start + len;
-        start = std::max(start, 0);
         end = std::min(end, (int) dstr.size());
-        end = std::max(end, 0);
-        if (start >= end) return {};
         auto first = dstr.begin() + start;
         auto last = dstr.begin() + end;
         dstring result(first, last);
@@ -351,12 +353,42 @@ struct UTF {
         return result;
     }
 
+    dstring u8to32substr(const char *sc, uint32_t len8, int start, int subLen) {
+        if (start < 0) {
+            subLen += start;
+            start = 0;
+        }
+        if (subLen <= 0)
+            return {};
+        dstring result;
+        result.resize(subLen);
+        const char *s = sc;
+        const char *eos = sc + len8;
+        int len = 0;
+        int dcounter = 0;
+        while (s < eos) {
+            uint32_t d = one8to32(s, eos, &s);
+            if (dcounter >= start) {
+                result[len] = d;
+                len++;
+            }
+            dcounter++;
+            if (dcounter == start + subLen)
+                break;
+        }
+        return result;
+    }
+
     std::wstring u8to16(const std::string &str) {
         return u8to16(str.c_str(), str.size());
     }
 
     std::wstring u8to16substr(const std::string &str, int start, int subLen) {
         return u8to16substr(str.c_str(), str.size(), start, subLen);
+    }
+
+    dstring u8to32substr(const std::string &str, int start, int subLen) {
+        return u8to32substr(str.c_str(), str.size(), start, subLen);
     }
 
     std::string u8to8substr(const char *sc, uint32_t len8, int start, int subLen) {
