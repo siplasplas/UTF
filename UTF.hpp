@@ -263,21 +263,17 @@ struct UTF {
     }
 
     std::string_view u8subview(const std::string_view view, int start, int subLen) {
-        return u8subview(view.data(), view.length(), start, subLen);
-    }
-
-    std::string_view u8subview(const char *sc, uint32_t len8, int start, int subLen) {
         if (start < 0) {
             subLen += start;
             start = 0;
         }
         if (subLen <= 0) return {};
-        const char *s = sc;
-        const char *eos = sc + len8;
+        const char *s = view.data();
+        const char *eos = view.data() + view.length();
         int dcounter = 0;
         const char *startView = nullptr;
         const char *endView = nullptr;
-        while (s - sc < len8) {
+        while (s  < eos) {
             if (dcounter >= start)
                 if (!startView)
                     startView = s;
