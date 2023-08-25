@@ -221,29 +221,43 @@ struct UTF {
     }
 
     int getU16LenSubstr(const char *sc, uint32_t len8, int start, int subLen) {
+        if (start < 0) {
+            subLen += start;
+            start = 0;
+        }
+        if (subLen <= 0) return 0;
         int result = 0;
         const char *s = sc;
         const char *eos = sc + len8;
         int dcounter = 0;
         while (s - sc < len8) {
             uint32_t d = one8to32(s, eos, &s);
-            if (dcounter >= start && dcounter < start + subLen)
+            if (dcounter >= start)
                 result += one16len(d);
             dcounter++;
+            if (dcounter == start + subLen)
+                return result;
         }
         return result;
     }
 
     int getU8LenSubstr(const char *sc, uint32_t len8, int start, int subLen) {
+        if (start < 0) {
+            subLen += start;
+            start = 0;
+        }
+        if (subLen <= 0) return 0;
         int result = 0;
         const char *s = sc;
         const char *eos = sc + len8;
         int dcounter = 0;
         while (s - sc < len8) {
             uint32_t d = one8to32(s, eos, &s);
-            if (dcounter >= start && dcounter < start + subLen)
+            if (dcounter >= start)
                 result += one8len(d);
             dcounter++;
+            if (dcounter == start + subLen)
+                return result;
         }
         return result;
     }
@@ -264,29 +278,43 @@ struct UTF {
     }
 
     int getU8LenSubstr(const std::wstring &wstr, int start, int subLen) {
+        if (start < 0) {
+            subLen += start;
+            start = 0;
+        }
+        if (subLen <= 0)
+            return 0;
         const wchar_t *wsc;
         const wchar_t *ws = wsc = wstr.c_str();
         int len = 0;
         int dcounter = 0;
         while (ws - wsc < wstr.size()) {
             uint32_t d = one16to32(ws, &ws);
-            if (dcounter >= start && dcounter < start + subLen)
+            if (dcounter >= start)
                 len += one8len(d);
             dcounter++;
+            if (dcounter == start + subLen) return len;
         }
         return len;
     }
 
     int getU16LenSubstr(const std::wstring &wstr, int start, int subLen) {
+        if (start < 0) {
+            subLen += start;
+            start = 0;
+        }
+        if (subLen <= 0)
+            return 0;
         const wchar_t *wsc;
         const wchar_t *ws = wsc = wstr.c_str();
         int len = 0;
         int dcounter = 0;
         while (ws - wsc < wstr.size()) {
             uint32_t d = one16to32(ws, &ws);
-            if (dcounter >= start && dcounter < start + subLen)
+            if (dcounter >= start)
                 len += one16len(d);
             dcounter++;
+            if (dcounter == start + subLen) return len;
         }
         return len;
     }
