@@ -242,6 +242,27 @@ struct UTF {
         return result;
     }
 
+    int getU32LenSubstr(const std::string_view strView, int start, int subLen) {
+        if (start < 0) {
+            subLen += start;
+            start = 0;
+        }
+        if (subLen <= 0) return 0;
+        int result = 0;
+        const char *s = strView.data();
+        const char *eos = strView.data() + strView.length();
+        int dcounter = 0;
+        while (s < eos) {
+            uint32_t d = one8to32(s, eos, &s);
+            if (dcounter >= start)
+                result++;
+            dcounter++;
+            if (dcounter == start + subLen)
+                return result;
+        }
+        return result;
+    }
+
     int getU8LenSubstr(const std::string_view strView, int start, int subLen) {
         if (start < 0) {
             subLen += start;
@@ -456,7 +477,7 @@ struct UTF {
         if (subLen <= 0)
             return {};
         std::u32string result;
-        result.resize(subLen);
+        result.resize(getU32LenSubstr(strView, start, subLen));
         const char *s = strView.data();
         const char *eos = strView.data() + strView.length();
         int len = 0;
