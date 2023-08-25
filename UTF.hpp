@@ -360,6 +360,12 @@ struct UTF {
     }
 
     std::wstring u8to16substr(const char *sc, uint32_t len8, int start, int subLen) {
+        if (start < 0) {
+            subLen += start;
+            start = 0;
+        }
+        if (subLen <= 0)
+            return {};
         std::wstring result;
         result.resize(getU16LenSubstr(sc, len8, start, subLen));
         const char *s = sc;
@@ -369,7 +375,7 @@ struct UTF {
         while (s < eos) {
             uint32_t d = one8to32(s, eos, &s);
             wchar_t pair[2];
-            if (dcounter >= start && dcounter < start + subLen) {
+            if (dcounter >= start) {
                 int k = one32to16(d, pair);
                 result[len] = pair[0];
                 if (k > 1)
@@ -377,6 +383,8 @@ struct UTF {
                 len += k;
             }
             dcounter++;
+            if (dcounter == start + subLen)
+                return result;
         }
         return result;
     }
@@ -420,6 +428,12 @@ struct UTF {
     }
 
     std::string u8to8substr(const char *sc, uint32_t len8, int start, int subLen) {
+        if (start < 0) {
+            subLen += start;
+            start = 0;
+        }
+        if (subLen <= 0)
+            return {};
         std::string result;
         result.resize(getU8LenSubstr(sc, len8, start, subLen));
         const char *s = sc;
@@ -428,7 +442,7 @@ struct UTF {
         int dcounter = 0;
         while (s < eos) {
             uint32_t d = one8to32(s, eos, &s);
-            if (dcounter >= start && dcounter < start + subLen) {
+            if (dcounter >= start) {
                 char buf[4];
                 int k = one32to8(d, buf);
                 for (int i = 0; i < k; i++) {
@@ -437,6 +451,8 @@ struct UTF {
                 }
             }
             dcounter++;
+            if (dcounter == start + subLen)
+                return result;
         }
         return result;
     }
@@ -476,6 +492,12 @@ struct UTF {
     }
 
     std::string u16to8substr(const std::wstring &wstr, int start, int subLen) {
+        if (start < 0) {
+            subLen += start;
+            start = 0;
+        }
+        if (subLen <= 0)
+            return {};
         std::string result;
         result.resize(getU8LenSubstr(wstr, start, subLen));
         const wchar_t *wsc;
@@ -484,7 +506,7 @@ struct UTF {
         int dcounter = 0;
         while (ws - wsc < wstr.size()) {
             uint32_t d = one16to32(ws, &ws);
-            if (dcounter >= start && dcounter < start + subLen) {
+            if (dcounter >= start) {
                 char buf[4];
                 int k = one32to8(d, buf);
                 for (int i = 0; i < k; i++) {
@@ -493,11 +515,19 @@ struct UTF {
                 }
             }
             dcounter++;
+            if (dcounter == start + subLen)
+                return result;
         }
         return result;
     }
 
     std::wstring u16to16substr(const std::wstring &wstr, int start, int subLen) {
+        if (start < 0) {
+            subLen += start;
+            start = 0;
+        }
+        if (subLen <= 0)
+            return {};
         std::wstring result;
         result.resize(getU16LenSubstr(wstr, start, subLen));
         const wchar_t *wsc;
@@ -507,7 +537,7 @@ struct UTF {
         while (ws - wsc < wstr.size()) {
             uint32_t d = one16to32(ws, &ws);
             wchar_t pair[2];
-            if (dcounter >= start && dcounter < start + subLen) {
+            if (dcounter >= start) {
                 int k = one32to16(d, pair);
                 result[len] = pair[0];
                 if (k > 1)
@@ -515,6 +545,8 @@ struct UTF {
                 len += k;
             }
             dcounter++;
+            if (dcounter == start + subLen)
+                return result;
         }
         return result;
     }
