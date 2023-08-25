@@ -7,6 +7,9 @@
 
 typedef std::vector<uint32_t> dstring;
 
+using u16string_view = std::basic_string_view<char16_t>;
+using u32string_view = std::basic_string_view<char32_t>;
+
 struct UTF {
     const int static MAXCHARLEN = 6;
     int errors = 0;
