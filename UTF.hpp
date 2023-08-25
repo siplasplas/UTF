@@ -20,9 +20,9 @@ struct UTF {
     etc..
  * */
     int errambig = 0;
-    const int MaxCP = 0x10ffff;
+    const char32_t MaxCP = 0x10ffff;
 
-    std::u32string substr32(const std::u32string &dstr, int start, int len) {
+    std::u32string substr32(const u32string_view dstr, int start, int len) {
         if (start < 0) {
             len += start;
             start = 0;
@@ -66,14 +66,14 @@ struct UTF {
             return 2;
     }
 
-    static bool isSurrogate1(int w) {
+    static bool isSurrogate1(char32_t w) {
         return w >= 0xD800 && w <= 0xDBFF;
     }
-    static bool isSurrogate2(int w) {
+    static bool isSurrogate2(char32_t w) {
         return w >= 0xDC00 && w <= 0xDFFF;
     }
 
-    static bool isSurrogate(int w) {
+    static bool isSurrogate(char32_t w) {
         return isSurrogate1(w) || isSurrogate2(w);
     }
 
@@ -403,7 +403,7 @@ struct UTF {
     int getU16Len(const std::u32string &dstr) {
         int len16 = 0;
         for (int i = 0; i < dstr.size(); i++) {
-            int d = dstr[i];
+            char32_t d = dstr[i];
             if (isSurrogate(d) || d > MaxCP) {
                 d = 0xFFFD;
             }
