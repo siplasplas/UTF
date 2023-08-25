@@ -209,28 +209,28 @@ struct UTF {
         return result;
     }
 
-    int getU16Len(const char* sc, uint32_t len8) {
+    int getU16Len(const std::string_view strView) {
         int result = 0;
-        const char *s = sc;
-        const char *eos = sc + len8;
-        while (s-sc < len8) {
+        const char *s = strView.data();
+        const char *eos = strView.data() + strView.length();
+        while (s < eos) {
             uint32_t d = one8to32(s,eos,&s);
             result += one16len(d);
         }
         return result;
     }
 
-    int getU16LenSubstr(const char *sc, uint32_t len8, int start, int subLen) {
+    int getU16LenSubstr(const std::string_view strView, int start, int subLen) {
         if (start < 0) {
             subLen += start;
             start = 0;
         }
         if (subLen <= 0) return 0;
         int result = 0;
-        const char *s = sc;
-        const char *eos = sc + len8;
+        const char *s = strView.data();
+        const char *eos = strView.data() + strView.length();
         int dcounter = 0;
-        while (s - sc < len8) {
+        while (s < eos) {
             uint32_t d = one8to32(s, eos, &s);
             if (dcounter >= start)
                 result += one16len(d);
@@ -241,17 +241,17 @@ struct UTF {
         return result;
     }
 
-    int getU8LenSubstr(const char *sc, uint32_t len8, int start, int subLen) {
+    int getU8LenSubstr(const std::string_view strView, int start, int subLen) {
         if (start < 0) {
             subLen += start;
             start = 0;
         }
         if (subLen <= 0) return 0;
         int result = 0;
-        const char *s = sc;
-        const char *eos = sc + len8;
+        const char *s = strView.data();
+        const char *eos = strView.data() + strView.length();
         int dcounter = 0;
-        while (s - sc < len8) {
+        while (s  < eos) {
             uint32_t d = one8to32(s, eos, &s);
             if (dcounter >= start)
                 result += one8len(d);
@@ -288,10 +288,6 @@ struct UTF {
             endView = eos;
         std::string_view result(startView, endView - startView);
         return result;
-    }
-
-    int getU16Len(const std::string_view str) {
-        return getU16Len(str.data(), str.size());
     }
 
     int getU8Len(const std::wstring_view wstr) {
@@ -403,11 +399,11 @@ struct UTF {
         return len16;
     }
 
-    std::wstring u8to16(const char* sc, uint32_t len8) {
+    std::wstring u8to16(const std::string_view strView) {
         std::wstring result;
-        result.resize(getU16Len(sc,len8));
-        const char *s = sc;
-        const char *eos = sc+len8;
+        result.resize(getU16Len(strView));
+        const char *s = strView.data();
+        const char *eos = strView.data() + strView.length();
         int len = 0;
         while (s<eos) {
             uint32_t d = one8to32(s, eos, &s);
@@ -421,7 +417,7 @@ struct UTF {
         return result;
     }
 
-    std::wstring u8to16substr(const char *sc, uint32_t len8, int start, int subLen) {
+    std::wstring u8to16substr(const std::string_view strView, int start, int subLen) {
         if (start < 0) {
             subLen += start;
             start = 0;
@@ -429,9 +425,9 @@ struct UTF {
         if (subLen <= 0)
             return {};
         std::wstring result;
-        result.resize(getU16LenSubstr(sc, len8, start, subLen));
-        const char *s = sc;
-        const char *eos = sc + len8;
+        result.resize(getU16LenSubstr(strView, start, subLen));
+        const char *s = strView.data();
+        const char *eos = strView.data() + strView.length();
         int len = 0;
         int dcounter = 0;
         while (s < eos) {
@@ -451,7 +447,7 @@ struct UTF {
         return result;
     }
 
-    dstring u8to32substr(const char *sc, uint32_t len8, int start, int subLen) {
+    dstring u8to32substr(const std::string_view strView, int start, int subLen) {
         if (start < 0) {
             subLen += start;
             start = 0;
@@ -460,8 +456,8 @@ struct UTF {
             return {};
         dstring result;
         result.resize(subLen);
-        const char *s = sc;
-        const char *eos = sc + len8;
+        const char *s = strView.data();
+        const char *eos = strView.data() + strView.length();
         int len = 0;
         int dcounter = 0;
         while (s < eos) {
@@ -477,19 +473,7 @@ struct UTF {
         return result;
     }
 
-    std::wstring u8to16(const std::string_view str) {
-        return u8to16(str.data(), str.size());
-    }
-
-    std::wstring u8to16substr(const std::string_view str, int start, int subLen) {
-        return u8to16substr(str.data(), str.size(), start, subLen);
-    }
-
-    dstring u8to32substr(const std::string_view str, int start, int subLen) {
-        return u8to32substr(str.data(), str.size(), start, subLen);
-    }
-
-    std::string u8to8substr(const char *sc, uint32_t len8, int start, int subLen) {
+    std::string u8to8substr(const std::string_view strView, int start, int subLen) {
         if (start < 0) {
             subLen += start;
             start = 0;
@@ -497,9 +481,9 @@ struct UTF {
         if (subLen <= 0)
             return {};
         std::string result;
-        result.resize(getU8LenSubstr(sc, len8, start, subLen));
-        const char *s = sc;
-        const char *eos = sc + len8;
+        result.resize(getU8LenSubstr(strView, start, subLen));
+        const char *s = strView.data();
+        const char *eos = strView.data() + strView.length();
         int len = 0;
         int dcounter = 0;
         while (s < eos) {
@@ -517,10 +501,6 @@ struct UTF {
                 return result;
         }
         return result;
-    }
-
-    std::string u8to8substr(const std::string_view str, int start, int subLen) {
-        return u8to8substr(str.data(), str.size(), start, subLen);
     }
 
     dstring u8to32(const std::string_view str) {
