@@ -9,7 +9,7 @@ using u16string_view = std::basic_string_view<char16_t>;
 using u32string_view = std::basic_string_view<char32_t>;
 
 struct UTF {
-    const int static MAXCHARLEN = 6;
+    const uint8_t static MAXCHARLEN = 6;
     int errors = 0;
 /**
  int errambig: check ambiguity against hacker attacks
@@ -22,21 +22,21 @@ struct UTF {
     int errambig = 0;
     const char32_t MaxCP = 0x10ffff;
 
-    std::u32string substr32(const u32string_view dstr, int start, int len) {
+    std::u32string substr32(const u32string_view dstr, int64_t start, int64_t len) {
         if (start < 0) {
             len += start;
             start = 0;
         }
         if (len <= 0) return {};
-        int end = start + len;
-        end = std::min(end, (int) dstr.size());
+        int64_t end = start + len;
+        end = std::min(end, (int64_t) dstr.size());
         auto first = dstr.begin() + start;
         auto last = dstr.begin() + end;
         std::u32string result(first, last);
         return result;
     }
 
-    int one8len(char c)
+    uint8_t one8len(char c)
     {
         uint8_t b0 = c;
         if ((b0 & 0x80) == 0)
@@ -48,7 +48,7 @@ struct UTF {
         return 4;
     }
 
-    int one8len(char32_t d) {
+    uint8_t one8len(char32_t d) {
         if (d <= 0x7f)
             return 1;
         else if (d <= 0x7ff)
@@ -59,7 +59,7 @@ struct UTF {
             return 4;
     }
 
-    int one16len(char32_t d) {
+    uint8_t one16len(char32_t d) {
         if (d < 0x10000)
             return 1;
         else
@@ -77,7 +77,7 @@ struct UTF {
         return isSurrogate1(w) || isSurrogate2(w);
     }
 
-    int one16len(char16_t wc)
+    uint8_t one16len(char16_t wc)
     {
         uint16_t w = (uint16_t)wc;
         if (w >= 0xD800 && w <= 0xDBFF)
@@ -97,11 +97,11 @@ struct UTF {
      * 7 bad 11111110
      * 8 bad 11111111
      * */
-    static int determineU8Len(unsigned char b) {
+    static uint8_t determineU8Len(uint8_t b) {
         if ((b & 0b10000000) == 0) return 1;
         if (insideU8code(b)) return 0;
-        int mask = 0b00100000;
-        for (int len=2; len<8; len++) {
+        uint8_t mask = 0b00100000;
+        for (uint8_t len = 2; len < 8; len++) {
             if ((b & mask) == 0) return len;
             mask >>= 1;
         }
@@ -109,14 +109,14 @@ struct UTF {
     }
 
     /* not check ambiguity in this stage */
-    static bool isCorrectU8code(const char *s, const char *eos, int &len) {
+    static bool isCorrectU8code(const char *s, const char *eos, uint8_t &len) {
         len = 1;
         if (insideU8code(*s))
             return false;
-        int expectLen = determineU8Len(*s);
+        uint8_t expectLen = determineU8Len(*s);
         if (expectLen > MAXCHARLEN)
             return false;
-        for (int i=2; i<=expectLen; i++) {
+        for (uint8_t i = 2; i <= expectLen; i++) {
             s++;
             if (s>=eos)
                 return false;
@@ -128,7 +128,7 @@ struct UTF {
     }
 
     char32_t one8to32(const char *s, const char *eos, const char **end) {
-        int len;
+        uint8_t len;
         bool isOK = isCorrectU8code(s, eos, len);
         *end = s+len;
         if (!isOK) {
@@ -139,10 +139,10 @@ struct UTF {
             return *s;
         else {
             assert(len>1 && len<=MAXCHARLEN);
-            int mask0 = 127 >> len;
+            uint8_t mask0 = 127 >> len;
             char32_t d = *s & mask0;
             int minimal = 0;
-            for (int i=1; i<len; i++) {
+            for (uint8_t i = 1; i < len; i++) {
                 d = (d << 6) | s[i] & 63;
                 if (minimal == 0)
                     minimal = 0x80;
@@ -160,7 +160,7 @@ struct UTF {
         }
     }
 
-    int one32to16(int d, char16_t *buf)
+    uint8_t one32to16(char32_t d, char16_t *buf)
     {
         if (isSurrogate(d) || d>MaxCP) {
             d = 0xFFFD;
@@ -179,8 +179,8 @@ struct UTF {
         }
     }
 
-    int getU32Len(const char *s, const char *eos) {
-        int result = 0;
+    int64_t getU32Len(const char *s, const char *eos) {
+        int64_t result = 0;
         while (s < eos) {
             char32_t d = one8to32(s,eos,&s);
             result++;
@@ -188,8 +188,8 @@ struct UTF {
         return result;
     }
 
-    int getU32Len(const std::string_view str) {
-        int result = 0;
+    int64_t getU32Len(const std::string_view str) {
+        int64_t result = 0;
         const char *s;
         const char *sc = s = str.data();
         const char *eos = sc+str.length();
@@ -200,18 +200,18 @@ struct UTF {
         return result;
     }
 
-    int getU32Len(const u16string_view wstr) {
-        int result = 0;
-        int n =  0;
-        while (n<wstr.size()) {
+    int64_t getU32Len(const u16string_view wstr) {
+        int64_t result = 0;
+        int64_t n = 0;
+        while (n < (int64_t) wstr.size()) {
             result++;
             n+= one16len(wstr[n]);
         }
         return result;
     }
 
-    int getU16Len(const std::string_view strView) {
-        int result = 0;
+    int64_t getU16Len(const std::string_view strView) {
+        int64_t result = 0;
         const char *s = strView.data();
         const char *eos = strView.data() + strView.length();
         while (s < eos) {
@@ -221,16 +221,16 @@ struct UTF {
         return result;
     }
 
-    int getU16LenSubstr(const std::string_view strView, int start, int subLen) {
+    int64_t getU16LenSubstr(const std::string_view strView, int64_t start, int64_t subLen) {
         if (start < 0) {
             subLen += start;
             start = 0;
         }
         if (subLen <= 0) return 0;
-        int result = 0;
+        int64_t result = 0;
         const char *s = strView.data();
         const char *eos = strView.data() + strView.length();
-        int dcounter = 0;
+        int64_t dcounter = 0;
         while (s < eos) {
             char32_t d = one8to32(s, eos, &s);
             if (dcounter >= start)
@@ -242,16 +242,16 @@ struct UTF {
         return result;
     }
 
-    int getU32LenSubstr(const std::string_view strView, int start, int subLen) {
+    int64_t getU32LenSubstr(const std::string_view strView, int64_t start, int64_t subLen) {
         if (start < 0) {
             subLen += start;
             start = 0;
         }
         if (subLen <= 0) return 0;
-        int result = 0;
+        int64_t result = 0;
         const char *s = strView.data();
         const char *eos = strView.data() + strView.length();
-        int dcounter = 0;
+        int64_t dcounter = 0;
         while (s < eos) {
             char32_t d = one8to32(s, eos, &s);
             if (dcounter >= start)
@@ -263,16 +263,16 @@ struct UTF {
         return result;
     }
 
-    int getU8LenSubstr(const std::string_view strView, int start, int subLen) {
+    int64_t getU8LenSubstr(const std::string_view strView, int64_t start, int64_t subLen) {
         if (start < 0) {
             subLen += start;
             start = 0;
         }
         if (subLen <= 0) return 0;
-        int result = 0;
+        int64_t result = 0;
         const char *s = strView.data();
         const char *eos = strView.data() + strView.length();
-        int dcounter = 0;
+        int64_t dcounter = 0;
         while (s  < eos) {
             char32_t d = one8to32(s, eos, &s);
             if (dcounter >= start)
@@ -284,7 +284,7 @@ struct UTF {
         return result;
     }
 
-    std::string_view u8subview(const std::string_view view, int start, int subLen) {
+    std::string_view u8subview(const std::string_view view, int64_t start, int64_t subLen) {
         if (start < 0) {
             subLen += start;
             start = 0;
@@ -292,7 +292,7 @@ struct UTF {
         if (subLen <= 0) return {};
         const char *s = view.data();
         const char *eos = view.data() + view.length();
-        int dcounter = 0;
+        int64_t dcounter = 0;
         const char *startView = nullptr;
         const char *endView = nullptr;
         while (s  < eos) {
@@ -312,10 +312,10 @@ struct UTF {
         return result;
     }
 
-    int getU8Len(const u16string_view wstr) {
+    int64_t getU8Len(const u16string_view wstr) {
         const char16_t *wsc;
         const char16_t *ws = wsc = wstr.data();
-        int len = 0;
+        int64_t len = 0;
         while (ws-wsc<wstr.size()) {
             char32_t d = one16to32(ws,&ws);
             len += one8len(d);
@@ -323,7 +323,7 @@ struct UTF {
         return len;
     }
 
-    int getU8LenSubstr(const u16string_view wstr, int start, int subLen) {
+    int64_t getU8LenSubstr(const u16string_view wstr, int64_t start, int64_t subLen) {
         if (start < 0) {
             subLen += start;
             start = 0;
@@ -332,8 +332,8 @@ struct UTF {
             return 0;
         const char16_t *wsc;
         const char16_t *ws = wsc = wstr.data();
-        int len = 0;
-        int dcounter = 0;
+        int64_t len = 0;
+        int64_t dcounter = 0;
         while (ws - wsc < wstr.size()) {
             char32_t d = one16to32(ws, &ws);
             if (dcounter >= start)
@@ -344,7 +344,7 @@ struct UTF {
         return len;
     }
 
-    int getU16LenSubstr(const u16string_view wstrView, int start, int subLen) {
+    int64_t getU16LenSubstr(const u16string_view wstrView, int64_t start, int64_t subLen) {
         if (start < 0) {
             subLen += start;
             start = 0;
@@ -353,8 +353,8 @@ struct UTF {
             return 0;
         const char16_t *ws = wstrView.data();
         const char16_t *eos = wstrView.data() + wstrView.length();
-        int len = 0;
-        int dcounter = 0;
+        int64_t len = 0;
+        int64_t dcounter = 0;
         while (ws < eos) {
             char32_t d = one16to32(ws, &ws);
             if (dcounter >= start)
@@ -365,7 +365,7 @@ struct UTF {
         return len;
     }
 
-    u16string_view u16subview(const u16string_view wstrView, int start, int subLen) {
+    u16string_view u16subview(const u16string_view wstrView, int64_t start, int64_t subLen) {
         if (start < 0) {
             subLen += start;
             start = 0;
@@ -376,7 +376,7 @@ struct UTF {
         const char16_t *eos = wstrView.data() + wstrView.length();
         const char16_t *startView = nullptr;
         const char16_t *endView = nullptr;
-        int dcounter = 0;
+        int64_t dcounter = 0;
         while (ws < eos) {
             if (dcounter >= start)
                 if(!startView)
@@ -393,16 +393,16 @@ struct UTF {
         return u16string_view(startView, endView - startView);
     }
 
-    int getU8Len(const std::u32string &dstr) {
-        int len8 = 0;
-        for (int i=0; i<dstr.size(); i++)
+    int64_t getU8Len(const std::u32string &dstr) {
+        int64_t len8 = 0;
+        for (int64_t i = 0; i < (int64_t) dstr.size(); i++)
             len8+= one8len(dstr[i]);
         return len8;
     }
 
-    int getU16Len(const std::u32string &dstr) {
-        int len16 = 0;
-        for (int i = 0; i < dstr.size(); i++) {
+    int64_t getU16Len(const std::u32string &dstr) {
+        int64_t len16 = 0;
+        for (int64_t i = 0; i < (int64_t) dstr.size(); i++) {
             char32_t d = dstr[i];
             if (isSurrogate(d) || d > MaxCP) {
                 d = 0xFFFD;
@@ -420,11 +420,11 @@ struct UTF {
         result.resize(getU16Len(strView));
         const char *s = strView.data();
         const char *eos = strView.data() + strView.length();
-        int len = 0;
+        int64_t len = 0;
         while (s<eos) {
             char32_t d = one8to32(s, eos, &s);
             char16_t pair[2];
-            int k = one32to16(d, pair);
+            uint8_t k = one32to16(d, pair);
             result[len] = pair[0];
             if (k>1)
                 result[len+1] = pair[1];
@@ -433,7 +433,7 @@ struct UTF {
         return result;
     }
 
-    std::u16string u8to16substr(const std::string_view strView, int start, int subLen) {
+    std::u16string u8to16substr(const std::string_view strView, int64_t start, int64_t subLen) {
         if (start < 0) {
             subLen += start;
             start = 0;
@@ -444,13 +444,13 @@ struct UTF {
         result.resize(getU16LenSubstr(strView, start, subLen));
         const char *s = strView.data();
         const char *eos = strView.data() + strView.length();
-        int len = 0;
-        int dcounter = 0;
+        int64_t len = 0;
+        int64_t dcounter = 0;
         while (s < eos) {
             char32_t d = one8to32(s, eos, &s);
             char16_t pair[2];
             if (dcounter >= start) {
-                int k = one32to16(d, pair);
+                uint8_t k = one32to16(d, pair);
                 result[len] = pair[0];
                 if (k > 1)
                     result[len + 1] = pair[1];
@@ -463,7 +463,7 @@ struct UTF {
         return result;
     }
 
-    std::u32string u8to32substr(const std::string_view strView, int start, int subLen) {
+    std::u32string u8to32substr(const std::string_view strView, int64_t start, int64_t subLen) {
         if (start < 0) {
             subLen += start;
             start = 0;
@@ -474,8 +474,8 @@ struct UTF {
         result.resize(getU32LenSubstr(strView, start, subLen));
         const char *s = strView.data();
         const char *eos = strView.data() + strView.length();
-        int len = 0;
-        int dcounter = 0;
+        int64_t len = 0;
+        int64_t dcounter = 0;
         while (s < eos) {
             char32_t d = one8to32(s, eos, &s);
             if (dcounter >= start) {
@@ -489,7 +489,7 @@ struct UTF {
         return result;
     }
 
-    std::string u8to8substr(const std::string_view strView, int start, int subLen) {
+    std::string u8to8substr(const std::string_view strView, int64_t start, int64_t subLen) {
         if (start < 0) {
             subLen += start;
             start = 0;
@@ -500,14 +500,14 @@ struct UTF {
         result.resize(getU8LenSubstr(strView, start, subLen));
         const char *s = strView.data();
         const char *eos = strView.data() + strView.length();
-        int len = 0;
-        int dcounter = 0;
+        int64_t len = 0;
+        int64_t dcounter = 0;
         while (s < eos) {
             char32_t d = one8to32(s, eos, &s);
             if (dcounter >= start) {
                 char buf[4];
-                int k = one32to8(d, buf);
-                for (int i = 0; i < k; i++) {
+                uint8_t k = one32to8(d, buf);
+                for (uint8_t i = 0; i < k; i++) {
                     result[len] = buf[i];
                     len++;
                 }
@@ -525,7 +525,7 @@ struct UTF {
         std::u32string result;
         result.resize(getU32Len(str));
         errors = errambig = 0;
-        for (int i=0; i<result.size(); i++) {
+        for (int64_t i = 0; i < (int64_t) result.size(); i++) {
             result[i] = one8to32(sc, eos, &sc);
         }
         assert(sc == str.data() + str.size());
@@ -537,12 +537,12 @@ struct UTF {
         result.resize(getU8Len(wstr));
         const char16_t *wsc;
         const char16_t *ws = wsc = wstr.data();
-        int len = 0;
+        int64_t len = 0;
         while (ws-wsc<wstr.size()) {
             char32_t d = one16to32(ws,&ws);
             char buf[4];
-            int k = one32to8(d, buf);
-            for (int i=0; i<k; i++) {
+            uint8_t k = one32to8(d, buf);
+            for (uint8_t i = 0; i < k; i++) {
                 result[len] = buf[i];
                 len++;
             }
@@ -550,7 +550,7 @@ struct UTF {
         return result;
     }
 
-    std::string u16to8substr(const u16string_view wstr, int start, int subLen) {
+    std::string u16to8substr(const u16string_view wstr, int64_t start, int64_t subLen) {
         if (start < 0) {
             subLen += start;
             start = 0;
@@ -561,14 +561,14 @@ struct UTF {
         result.resize(getU8LenSubstr(wstr, start, subLen));
         const char16_t *wsc;
         const char16_t *ws = wsc = wstr.data();
-        int len = 0;
-        int dcounter = 0;
+        int64_t len = 0;
+        int64_t dcounter = 0;
         while (ws - wsc < wstr.size()) {
             char32_t d = one16to32(ws, &ws);
             if (dcounter >= start) {
                 char buf[4];
-                int k = one32to8(d, buf);
-                for (int i = 0; i < k; i++) {
+                uint8_t k = one32to8(d, buf);
+                for (uint8_t i = 0; i < k; i++) {
                     result[len] = buf[i];
                     len++;
                 }
@@ -580,7 +580,7 @@ struct UTF {
         return result;
     }
 
-    std::u16string u16to16substr(const u16string_view wstr, int start, int subLen) {
+    std::u16string u16to16substr(const u16string_view wstr, int64_t start, int64_t subLen) {
         if (start < 0) {
             subLen += start;
             start = 0;
@@ -591,13 +591,13 @@ struct UTF {
         result.resize(getU16LenSubstr(wstr, start, subLen));
         const char16_t *wsc;
         const char16_t *ws = wsc = wstr.data();
-        int len = 0;
-        int dcounter = 0;
+        int64_t len = 0;
+        int64_t dcounter = 0;
         while (ws - wsc < wstr.size()) {
             char32_t d = one16to32(ws, &ws);
             char16_t pair[2];
             if (dcounter >= start) {
-                int k = one32to16(d, pair);
+                uint8_t k = one32to16(d, pair);
                 result[len] = pair[0];
                 if (k > 1)
                     result[len + 1] = pair[1];
@@ -610,16 +610,16 @@ struct UTF {
         return result;
     }
 
-    int one16to32(const char16_t *text, const char16_t **end)
+    int64_t one16to32(const char16_t *text, const char16_t **end)
     {
         *end = text;
-        uint16_t w1 = (uint16_t)**end;
+        auto w1 = (char16_t) **end;
         (*end)++;
         if (w1 >= 0xD800 && w1 <= 0xDBFF)
         {
-            uint16_t w2 = (uint16_t)**end;
+            auto w2 = (char16_t) **end;
             (*end)++;
-            return 0x400*((int)w1 - 0xD800) + ((int)w2 - 0xDC00) + 0x10000;
+            return 0x400 * ((char32_t) w1 - 0xD800) + ((char32_t) w2 - 0xDC00) + 0x10000;
         }
         else
             return w1;
@@ -630,13 +630,13 @@ struct UTF {
         const char16_t *cws = wstr.data();
         std::u32string result;
         result.resize(getU32Len(wstr));
-        for (int i=0; i<result.size(); i++) {
+        for (int64_t i = 0; i < result.size(); i++) {
             result[i] = one16to32(cws, &cws);
         }
         return result;
     }
 
-    int one32to8(int d, char *buf)
+    uint8_t one32to8(char32_t d, char *buf)
     {
         if (isSurrogate(d) || d>MaxCP) {
             d = 0xFFFD;
@@ -673,11 +673,11 @@ struct UTF {
     std::string u32to8(const std::u32string &dstr) {
         std::string result;
         result.resize(getU8Len(dstr));
-        int len = 0;
-        for (int i=0; i<dstr.size(); i++) {
+        int64_t len = 0;
+        for (int64_t i = 0; i < (int64_t) dstr.size(); i++) {
             char buf[10];
-            int k = one32to8(dstr[i], buf);
-            for (int i=0; i<k; i++) {
+            uint8_t k = one32to8(dstr[i], buf);
+            for (uint8_t i = 0; i < k; i++) {
                 result[len] = buf[i];
                 len++;
             }
@@ -688,10 +688,10 @@ struct UTF {
     std::u16string u32to16(const std::u32string &dstr) {
         std::u16string result;
         result.resize(getU16Len(dstr));
-        int len = 0;
-        for (int i=0; i<dstr.size(); i++) {
+        int64_t len = 0;
+        for (int64_t i = 0; i < (int64_t) dstr.size(); i++) {
             char16_t pair[2];
-            int k = one32to16(dstr[i], pair);
+            uint8_t k = one32to16(dstr[i], pair);
             result[len] = pair[0];
             if (k>1)
                 result[len+1] = pair[1];
@@ -705,7 +705,7 @@ struct UTF {
      * maximal 5 insideU8code
      * */
     const char* findUtf8(const char *s, const char *ss) {
-        int len = MAXCHARLEN;
+        uint8_t len = MAXCHARLEN;
         const char *const start = s;
         while (s>ss && insideU8code(*s)) {
             s--;
@@ -723,11 +723,11 @@ struct UTF {
         return findUtf8(s-1, ss);
     }
 
-    const char* forwardNcodes(const char *s, int N, const char * send, int& actual) {
+    const char *forwardNcodes(const char *s, int64_t N, const char *send, int64_t &actual) {
         assert(s<=send);
         actual = 0;
         if (s==send) return send;
-        for (int i=0; i<N; i++) {
+        for (int64_t i = 0; i < N; i++) {
             s = findNextUtf8AtHeader(s, send);
             actual++;
             assert(s<=send);
@@ -736,11 +736,11 @@ struct UTF {
         return s;
     }
 
-    const char* backwardNcodes(const char *s, int N, const char * sstart, int& actual) {
+    const char *backwardNcodes(const char *s, int64_t N, const char *sstart, int64_t &actual) {
         assert(s>=sstart);
         actual = 0;
         if (s==sstart) return sstart;
-        for (int i=0; i<N; i++) {
+        for (int64_t i=0; i<N; i++) {
             s = findPrevUtf8AtHeader(s, sstart);
             actual++;
             assert(s>=sstart);
@@ -760,7 +760,7 @@ struct UTF {
         return N;
     }
 
-    const char* findNextUtf8AtHeader(const char *s, const char *eos) {
+    static const char* findNextUtf8AtHeader(const char *s, const char *eos) {
         assert(s<=eos);
         if (s==eos)
             return eos;
@@ -768,10 +768,10 @@ struct UTF {
             //assume we have at start previus or on bad char
             //no real inside UTF8 code
             return s+1;
-        int expectLen = determineU8Len(*s);
+        uint8_t expectLen = determineU8Len(*s);
         if (expectLen>MAXCHARLEN || expectLen<2)
             return s+1;
-        for (int i=2; i<=expectLen; i++) {
+        for (uint8_t i=2; i<=expectLen; i++) {
             s++;
             if (s>=eos)
                 return eos;

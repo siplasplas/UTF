@@ -306,7 +306,7 @@ TEST(Ncodes, forback) {
     const char *send = s+str.length();
     EXPECT_EQ(*send, 0);
     EXPECT_EQ(*s, 'b');
-    int actual;
+    int64_t actual;
     UTF utf;
     s = utf.forwardNcodes(s, 2, send, actual);
     EXPECT_EQ(*s, 'k');
