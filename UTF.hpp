@@ -344,21 +344,18 @@ struct UTF {
         return len;
     }
 
-    int getU16LenSubstr(const u16string_view wstr, int start, int subLen) {
-        return getU16LenSubstr(wstr.data(), wstr.size(), start, subLen);
-    }
-
-    int getU16LenSubstr(const char16_t *wsc, uint32_t len16, int start, int subLen) {
+    int getU16LenSubstr(const u16string_view wstrView, int start, int subLen) {
         if (start < 0) {
             subLen += start;
             start = 0;
         }
         if (subLen <= 0)
             return 0;
-        const char16_t *ws = wsc;
+        const char16_t *ws = wstrView.data();
+        const char16_t *eos = wstrView.data() + wstrView.length();
         int len = 0;
         int dcounter = 0;
-        while (ws - wsc < len16) {
+        while (ws < eos) {
             char32_t d = one16to32(ws, &ws);
             if (dcounter >= start)
                 len += one16len(d);
@@ -368,22 +365,19 @@ struct UTF {
         return len;
     }
 
-    u16string_view u16subview(const u16string_view view, int start, int subLen) {
-        return u16subview(view.data(), view.length(), start, subLen);
-    }
-
-    u16string_view u16subview(const char16_t *wsc, uint32_t len16, int start, int subLen) {
+    u16string_view u16subview(const u16string_view wstrView, int start, int subLen) {
         if (start < 0) {
             subLen += start;
             start = 0;
         }
         if (subLen <= 0)
             return {};
-        const char16_t *ws = wsc;
+        const char16_t *ws = wstrView.data();
+        const char16_t *eos = wstrView.data() + wstrView.length();
         const char16_t *startView = nullptr;
         const char16_t *endView = nullptr;
         int dcounter = 0;
-        while (ws - wsc < len16) {
+        while (ws < eos) {
             if (dcounter >= start)
                 if(!startView)
                     startView = ws;
@@ -395,7 +389,7 @@ struct UTF {
             }
         }
         if (!endView)
-            endView = wsc+len16;
+            endView = eos;
         return u16string_view(startView, endView - startView);
     }
 
