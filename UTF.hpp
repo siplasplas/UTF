@@ -325,17 +325,20 @@ struct UTF {
     }
 
     int getU16LenSubstr(const std::wstring &wstr, int start, int subLen) {
+        return getU16LenSubstr(wstr.c_str(), wstr.size(), start, subLen);
+    }
+
+    int getU16LenSubstr(const wchar_t *wsc, uint32_t len16, int start, int subLen) {
         if (start < 0) {
             subLen += start;
             start = 0;
         }
         if (subLen <= 0)
             return 0;
-        const wchar_t *wsc;
-        const wchar_t *ws = wsc = wstr.c_str();
+        const wchar_t *ws = wsc;
         int len = 0;
         int dcounter = 0;
-        while (ws - wsc < wstr.size()) {
+        while (ws - wsc < len16) {
             uint32_t d = one16to32(ws, &ws);
             if (dcounter >= start)
                 len += one16len(d);
