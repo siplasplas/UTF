@@ -348,6 +348,31 @@ struct UTF {
         return len;
     }
 
+    std::wstring_view u16subview(const wchar_t *wsc, uint32_t len16, int start, int subLen) {
+        if (start < 0) {
+            subLen += start;
+            start = 0;
+        }
+        if (subLen <= 0)
+            return {};
+        const wchar_t *ws = wsc;
+        const wchar_t *startView = nullptr;
+        const wchar_t *endView = nullptr;
+        int dcounter = 0;
+        while (ws - wsc < len16) {
+            uint32_t d = one16to32(ws, &ws);
+            if (dcounter >= start)
+                if(!startView)
+                    startView = ws;
+            dcounter++;
+            if (dcounter == start + subLen)
+                endView = ws;
+        }
+        if (!endView)
+            endView = wsc+len16;
+        return std::wstring_view(startView, endView - startView);
+    }
+
     int getU8Len(const dstring &dstr) {
         int len8 = 0;
         for (int i=0; i<dstr.size(); i++)
