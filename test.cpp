@@ -390,3 +390,24 @@ TEST(Subview, Unicode) {
         }
     }
 }
+
+TEST(Endianness, Swap16) {
+    char16_t c = 0x1234;
+    char16_t expected = 0x3412;
+    char16_t test = UTF::swap16(c);
+    EXPECT_EQ(test, expected);
+}
+
+TEST(Endianness, Swap32) {
+    char32_t c = 0x12345678;
+    char32_t expected = 0x56781234;
+    char32_t test = UTF::swap32(c);
+    EXPECT_EQ(test, expected);
+}
+
+TEST(Endianness, Reverse32) {
+    char32_t c = 0x12345678;
+    char32_t expected = 0x78563412;
+    char32_t test = UTF::reverse32(c);
+    EXPECT_EQ(test, expected);
+}

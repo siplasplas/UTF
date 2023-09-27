@@ -22,6 +22,18 @@ struct UTF {
     int errambig = 0;
     const static char32_t MaxCP = 0x10ffff;
 
+    static char16_t swap16(char16_t c) {
+        return ((c & 0xFF) << 8) | ((c & 0xFF00) >> 8);
+    }
+
+    static char32_t swap32(char32_t c) {
+        return ((c & 0xFFFF) << 16) | ((c & 0xFFFF0000) >> 16);
+    }
+
+    static char32_t reverse32(char32_t c) {
+        return ((c & 0xFF) << 24) | ((c & 0xFF00) << 8) | ((c & 0xFF0000) >> 8) | ((c & 0xFF000000) >> 24);
+    }
+
     static std::u32string substr32(const u32string_view dstr, int64_t start, int64_t len) {
         if (start < 0) {
             len += start;
