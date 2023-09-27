@@ -9,10 +9,10 @@ bool skipHard = false;
 using namespace std;
 
 u32string fillDstring() {
-    const int MAX=0x10ffff;
+    const int MAX = UTF::MaxCP;
     u32string dstr;
     dstr.resize(MAX+1);
-    for (int i=0; i<=MAX; i++)
+    for (int i = 0; i <= MAX; i++)
         if (UTF::isSurrogate(i))
             dstr[i] = 0;
         else

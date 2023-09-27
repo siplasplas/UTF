@@ -20,7 +20,7 @@ struct UTF {
     etc..
  * */
     int errambig = 0;
-    const char32_t MaxCP = 0x10ffff;
+    const static char32_t MaxCP = 0x10ffff;
 
     static std::u32string substr32(const u32string_view dstr, int64_t start, int64_t len) {
         if (start < 0) {
