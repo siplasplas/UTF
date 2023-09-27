@@ -677,8 +677,8 @@ struct UTF {
         for (int64_t i = 0; i < (int64_t) dstr.size(); i++) {
             char buf[10];
             uint8_t k = one32to8(dstr[i], buf);
-            for (uint8_t i = 0; i < k; i++) {
-                result[len] = buf[i];
+            for (uint8_t j = 0; j < k; j++) {
+                result[len] = buf[j];
                 len++;
             }
         }
