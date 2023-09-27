@@ -34,6 +34,16 @@ struct UTF {
         return ((c & 0xFF) << 24) | ((c & 0xFF00) << 8) | ((c & 0xFF0000) >> 8) | ((c & 0xFF000000) >> 24);
     }
 
+    static void swapIt(std::u16string &u16) {
+        for (auto &c: u16)
+            c = swap16(c);
+    }
+
+    static void reverseIt(std::u32string &u32) {
+        for (auto &c: u32)
+            c = reverse32(c);
+    }
+
     static std::u32string substr32(const u32string_view dstr, int64_t start, int64_t len) {
         if (start < 0) {
             len += start;

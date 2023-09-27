@@ -398,6 +398,17 @@ TEST(Endianness, Swap16) {
     EXPECT_EQ(test, expected);
 }
 
+TEST(Endianness, Swap16string) {
+    char16_t c = 0x1234;
+    std::u16string s16;
+    s16 = c + c;
+    char16_t expected = 0x3412;
+    std::u16string s16exp;
+    s16exp = expected + expected;
+    UTF::swapIt(s16);
+    EXPECT_EQ(s16, s16exp);
+}
+
 TEST(Endianness, Swap32) {
     char32_t c = 0x12345678;
     char32_t expected = 0x56781234;
@@ -410,4 +421,15 @@ TEST(Endianness, Reverse32) {
     char32_t expected = 0x78563412;
     char32_t test = UTF::reverse32(c);
     EXPECT_EQ(test, expected);
+}
+
+TEST(Endianness, Reverse32string) {
+    char32_t c = 0x12345678;
+    std::u32string s32;
+    s32 = c + c;
+    char32_t expected = 0x78563412;
+    std::u32string s32exp;
+    s32exp = expected + expected;
+    UTF::reverseIt(s32);
+    EXPECT_EQ(s32, s32exp);
 }
