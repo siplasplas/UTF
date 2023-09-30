@@ -415,14 +415,14 @@ struct UTF {
         return u16string_view(startView, endView - startView);
     }
 
-    static int64_t getU8Len(const std::u32string &dstr) {
+    static int64_t getU8Len(const std::u32string_view &dstr) {
         int64_t len8 = 0;
         for (int64_t i = 0; i < (int64_t) dstr.size(); i++)
             len8+= one8len(dstr[i]);
         return len8;
     }
 
-    int64_t getU16Len(const std::u32string &dstr) const {
+    int64_t getU16Len(const std::u32string_view &dstr) const {
         int64_t len16 = 0;
         for (int64_t i = 0; i < (int64_t) dstr.size(); i++) {
             char32_t d = dstr[i];
@@ -692,7 +692,7 @@ struct UTF {
         }
     }
 
-    std::string u32to8(const std::u32string &dstr) {
+    std::string u32to8(const std::u32string_view &dstr) {
         std::string result;
         result.resize(getU8Len(dstr));
         int64_t len = 0;
@@ -707,7 +707,7 @@ struct UTF {
         return result;
     }
 
-    std::u16string u32to16(const std::u32string &dstr) {
+    std::u16string u32to16(const std::u32string_view &dstr) {
         std::u16string result;
         result.resize(getU16Len(dstr));
         int64_t len = 0;
