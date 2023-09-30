@@ -10,6 +10,7 @@ using u32string_view = std::basic_string_view<char32_t>;
 
 struct UTF {
     const uint8_t static MAXCHARLEN = 6;
+    const uint16_t static REPLACEMENT = 0xfffd;
     int errors = 0;
 /**
  int errambig: check ambiguity against hacker attacks
@@ -155,7 +156,7 @@ struct UTF {
         *end = s+len;
         if (!isOK) {
             errors++;
-            return 0xfffd;
+            return REPLACEMENT;
         }
         if (len==1)
             return *s;
@@ -176,7 +177,7 @@ struct UTF {
             if (d < minimal) {
                 errambig++;
                 errors++;
-                return 0xfffd;
+                return REPLACEMENT;
             }
             return d;
         }
@@ -185,7 +186,7 @@ struct UTF {
     uint8_t one32to16(char32_t d, char16_t *buf)
     {
         if (isSurrogate(d) || d>MaxCP) {
-            d = 0xFFFD;
+            d = REPLACEMENT;
             errors++;
         }
         if (d < 0x10000)
@@ -427,7 +428,7 @@ struct UTF {
         for (int64_t i = 0; i < (int64_t) dstr.size(); i++) {
             char32_t d = dstr[i];
             if (isSurrogate(d) || d > MaxCP) {
-                d = 0xFFFD;
+                d = REPLACEMENT;
             }
             if (d < 0x10000)
                 len16++;
@@ -661,7 +662,7 @@ struct UTF {
     uint8_t one32to8(char32_t d, char *buf)
     {
         if (isSurrogate(d) || d>MaxCP) {
-            d = 0xFFFD;
+            d = REPLACEMENT;
             errors++;
         }
         if (d <= 0x7f)
