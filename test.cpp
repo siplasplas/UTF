@@ -12,9 +12,10 @@ u32string fillDstring() {
     const int MAX = UTF::MaxCP;
     u32string dstr;
     dstr.resize(MAX + 1);
-    for (int i = 0; i <= MAX; i++)
+    dstr[0] = 1;
+    for (int i = 1; i <= MAX; i++)
         if (UTF::isSurrogate(i))
-            dstr[i] = 0;
+            dstr[i] = 1;
         else
             dstr[i] = i;
     return dstr;
@@ -83,6 +84,25 @@ TEST(Conv, u16to8) {
     u16string wstr = utf.u32to16(dstr);
     string str = utf.u16to8(wstr);
     u16string wstr1 = utf.u8to16(str);
+    bool fail16to8 = false;
+    EXPECT_EQ(wstr.size(), wstr1.size());
+    for (int i = 0; i <= wstr.size(); i++) {
+        if (wstr[i] != wstr1[i]) {
+            fail16to8 = true;
+            break;
+        }
+    }
+    EXPECT_FALSE(fail16to8);
+}
+
+TEST(Conv, u16to8Z) {
+    if (skipHard)
+        GTEST_SKIP();
+    u32string dstr = fillDstring();
+    UTF utf;
+    u16string wstr = utf.u32to16(dstr);
+    string str = utf.u16to8(wstr.c_str());
+    u16string wstr1 = utf.u8to16(str.c_str());
     bool fail16to8 = false;
     EXPECT_EQ(wstr.size(), wstr1.size());
     for (int i = 0; i <= wstr.size(); i++) {

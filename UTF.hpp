@@ -45,6 +45,18 @@ struct UTF {
             c = reverse32(c);
     }
 
+    static const char *strend(const char *s) {
+        while (*s)
+            s++;
+        return s;
+    }
+
+    static const char16_t *strend(const char16_t *s) {
+        while (*s)
+            s++;
+        return s;
+    }
+
     static std::u32string substr32(const u32string_view dstr, int64_t start, int64_t len) {
         if (start < 0) {
             len += start;
@@ -238,6 +250,17 @@ struct UTF {
         return result;
     }
 
+    int64_t getU16Len(const char *str) {
+        int64_t result = 0;
+        const char *s = str;
+        const char *eos = strend(str);
+        while (s < eos) {
+            char32_t d = one8to32(s, eos, &s);
+            result += one16len(d);
+        }
+        return result;
+    }
+
     int64_t getU16LenSubstr(const std::string_view strView, int64_t start, int64_t subLen) {
         if (start < 0) {
             subLen += start;
@@ -334,6 +357,17 @@ struct UTF {
         const char16_t *ws = wsc = wstr.data();
         int64_t len = 0;
         while (ws - wsc < wstr.size()) {
+            char32_t d = one16to32(ws, &ws);
+            len += one8len(d);
+        }
+        return len;
+    }
+
+    static int64_t getU8Len(const char16_t *wstr) {
+        const char16_t *ws = wstr;
+        const char16_t *eos = strend(wstr);
+        int64_t len = 0;
+        while (ws  < eos) {
             char32_t d = one16to32(ws, &ws);
             len += one8len(d);
         }
@@ -437,6 +471,24 @@ struct UTF {
         result.resize(getU16Len(strView));
         const char *s = strView.data();
         const char *eos = strView.data() + strView.length();
+        int64_t len = 0;
+        while (s < eos) {
+            char32_t d = one8to32(s, eos, &s);
+            char16_t pair[2];
+            uint8_t k = one32to16(d, pair);
+            result[len] = pair[0];
+            if (k > 1)
+                result[len + 1] = pair[1];
+            len += k;
+        }
+        return result;
+    }
+
+    std::u16string u8to16(const char *str) {
+        std::u16string result;
+        result.resize(getU16Len(str));
+        const char *s = str;
+        const char *eos = strend(str);
         int64_t len = 0;
         while (s < eos) {
             char32_t d = one8to32(s, eos, &s);
@@ -556,6 +608,24 @@ struct UTF {
         const char16_t *ws = wsc = wstr.data();
         int64_t len = 0;
         while (ws - wsc < wstr.size()) {
+            char32_t d = one16to32(ws, &ws);
+            char buf[4];
+            uint8_t k = one32to8(d, buf);
+            for (uint8_t i = 0; i < k; i++) {
+                result[len] = buf[i];
+                len++;
+            }
+        }
+        return result;
+    }
+
+    std::string u16to8(const char16_t *wstr) {
+        std::string result;
+        result.resize(getU8Len(wstr));
+        const char16_t *ws = wstr;
+        const char16_t *eos = strend(wstr);
+        int64_t len = 0;
+        while (ws < eos) {
             char32_t d = one16to32(ws, &ws);
             char buf[4];
             uint8_t k = one32to8(d, buf);
@@ -698,6 +768,7 @@ struct UTF {
             char16_t pair[2];
             uint8_t k = one32to16(dstr[i], pair);
             result[len] = pair[0];
+            assert(result[len]);
             if (k > 1)
                 result[len + 1] = pair[1];
             len += k;
