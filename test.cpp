@@ -11,7 +11,7 @@ using namespace std;
 u32string fillDstring() {
     const int MAX = UTF::MaxCP;
     u32string dstr;
-    dstr.resize(MAX+1);
+    dstr.resize(MAX + 1);
     for (int i = 0; i <= MAX; i++)
         if (UTF::isSurrogate(i))
             dstr[i] = 0;
@@ -29,8 +29,8 @@ TEST(Conv, u32to8) {
     u32string dstr1 = utf.u8to32(str);
     bool fail32to8 = false;
     EXPECT_EQ(dstr.size(), dstr1.size());
-    for (int i=0; i<=dstr.size(); i++) {
-        if (dstr[i] != dstr1[i]){
+    for (int i = 0; i <= dstr.size(); i++) {
+        if (dstr[i] != dstr1[i]) {
             fail32to8 = true;
             break;
         }
@@ -47,8 +47,8 @@ TEST(Conv, u32to16) {
     u32string dstr1 = utf.u16to32(wstr);
     bool fail32to16 = false;
     EXPECT_EQ(dstr.size(), dstr1.size());
-    for (int i=0; i<=dstr.size(); i++) {
-        if (dstr[i] != dstr1[i]){
+    for (int i = 0; i <= dstr.size(); i++) {
+        if (dstr[i] != dstr1[i]) {
             fail32to16 = true;
             break;
         }
@@ -66,8 +66,8 @@ TEST(Conv, u8to16) {
     string str1 = utf.u16to8(wstr);
     bool fail8to16 = false;
     EXPECT_EQ(str.size(), str1.size());
-    for (int i=0; i<=str.size(); i++) {
-        if (str[i] != str1[i]){
+    for (int i = 0; i <= str.size(); i++) {
+        if (str[i] != str1[i]) {
             fail8to16 = true;
             break;
         }
@@ -85,7 +85,7 @@ TEST(Conv, u16to8) {
     u16string wstr1 = utf.u8to16(str);
     bool fail16to8 = false;
     EXPECT_EQ(wstr.size(), wstr1.size());
-    for (int i=0; i<=wstr.size(); i++) {
+    for (int i = 0; i <= wstr.size(); i++) {
         if (wstr[i] != wstr1[i]) {
             fail16to8 = true;
             break;
@@ -106,7 +106,7 @@ TEST(Errors, on1) {
 
 TEST(CorrectUtf8, len1) {
     string str = "a\106b";
-    u32string expect {'a', 0106, 'b'};
+    u32string expect{'a', 0106, 'b'};
     UTF utf;
     u32string dstr = utf.u8to32(str);
     u16string wstr = utf.u32to16(dstr);
@@ -117,7 +117,7 @@ TEST(CorrectUtf8, len1) {
 //110xxxxx 10xxxxxx
 TEST(CorrectUtf8, len2) {
     string str = "a\325\252b";
-    u32string expect {'a', 02552, 'b'};
+    u32string expect{'a', 02552, 'b'};
     UTF utf;
     u32string dstr = utf.u8to32(str);
     u16string wstr = utf.u32to16(dstr);
@@ -128,7 +128,7 @@ TEST(CorrectUtf8, len2) {
 //1110xxxx 10xxxxxx 10xxxxxx
 TEST(CorrectUtf8, len3) {
     string str = "a\352\252\252b";
-    u32string expect {'a', 0xaaaa, 'b'};
+    u32string expect{'a', 0xaaaa, 'b'};
     UTF utf;
     u32string dstr = utf.u8to32(str);
     u16string wstr = utf.u32to16(dstr);
@@ -142,10 +142,10 @@ TEST(CorrectUtf8, len3) {
 TEST(AmbigUtf8, slash2) {
     string str = "a\300\257b";
     //11000000 10101111
-    u32string expect {'a', 0xfffd, 'b'};
+    u32string expect{'a', 0xfffd, 'b'};
     UTF utf;
     u32string dstr = utf.u8to32(str);
-    EXPECT_EQ(utf.errambig,1);
+    EXPECT_EQ(utf.errambig, 1);
     u16string wstr = utf.u32to16(dstr);
     EXPECT_EQ(dstr, expect);
     EXPECT_EQ(wstr, u"a\xfffd\x0062");
@@ -154,10 +154,10 @@ TEST(AmbigUtf8, slash2) {
 TEST(AmbigUtf8, slash3) {
     string str = "a\340\200\257b";
     //11100000 10000000 10101111
-    u32string expect {'a', 0xfffd, 'b'};
+    u32string expect{'a', 0xfffd, 'b'};
     UTF utf;
     u32string dstr = utf.u8to32(str);
-    EXPECT_EQ(utf.errambig,1);
+    EXPECT_EQ(utf.errambig, 1);
     u16string wstr = utf.u32to16(dstr);
     EXPECT_EQ(dstr, expect);
     EXPECT_EQ(wstr, u"a\xfffd\x0062");
@@ -166,10 +166,10 @@ TEST(AmbigUtf8, slash3) {
 TEST(AmbigUtf8, len4) {
     string str = "a\360\200\200\203b";
     //11110000 10000000 10000000 10000011
-    u32string expect {'a', 0xfffd, 'b'};
+    u32string expect{'a', 0xfffd, 'b'};
     UTF utf;
     u32string dstr = utf.u8to32(str);
-    EXPECT_EQ(utf.errambig,1);
+    EXPECT_EQ(utf.errambig, 1);
     u16string wstr = utf.u32to16(dstr);
     EXPECT_EQ(dstr, expect);
     EXPECT_EQ(wstr, u"a\xfffd\x0062");
@@ -178,7 +178,7 @@ TEST(AmbigUtf8, len4) {
 TEST(ExceedsUtf16, len4) {
     string str = "a\367\277\277\277b";
     //11110111 10111111 10111111 10111111
-    u32string expect {'a', 0x1FFFFF, 'b'};
+    u32string expect{'a', 0x1FFFFF, 'b'};
     UTF utf;
     u32string dstr = utf.u8to32(str);
     EXPECT_EQ(utf.errors, 0);
@@ -192,7 +192,7 @@ TEST(ExceedsUtf16, len5) {
     string str = "a\372\200\200\200\200b";
     //11111010 10000000 10000000 10000000 10000000
     //10000000000000000000000000
-    u32string expect {'a', 0x2000000, 'b'};
+    u32string expect{'a', 0x2000000, 'b'};
     UTF utf;
     u32string dstr = utf.u8to32(str);
     EXPECT_EQ(utf.errors, 0);
@@ -206,7 +206,7 @@ TEST(ExceedsUtf16, len6) {
     string str = "a\375\200\200\200\200\200b";
     //1111110x 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx
     //1000000000000000000000000000000
-    u32string expect {'a', 0x40000000, 'b'};
+    u32string expect{'a', 0x40000000, 'b'};
     UTF utf;
     u32string dstr = utf.u8to32(str);
     EXPECT_EQ(utf.errors, 0);
@@ -218,7 +218,7 @@ TEST(ExceedsUtf16, len6) {
 
 //form 10xxxxxx without start byte
 TEST(ut8errors, inside) {
-    for (int len=1; len<10; len++) {
+    for (int len = 1; len < 10; len++) {
         unsigned char c = 128 + len;
         string str = "a";
         u32string expect{'a'};
@@ -226,7 +226,7 @@ TEST(ut8errors, inside) {
             str += (char) c;
             expect.push_back(0xfffd);
         }
-        str+= "b";
+        str += "b";
         expect.push_back('b');
         UTF utf;
         u32string dstr = utf.u8to32(str);
@@ -237,17 +237,17 @@ TEST(ut8errors, inside) {
 
 //no form 10xxxxxx after head 110xxxxx
 TEST(utf8errors, onlyHead) {
-        string str = "a\337b";
-        u32string expect{'a',0xfffd, 'b'};
-        UTF utf;
-        u32string dstr = utf.u8to32(str);
-        EXPECT_EQ(utf.errors, 1);
-        EXPECT_EQ(dstr, expect);
+    string str = "a\337b";
+    u32string expect{'a', 0xfffd, 'b'};
+    UTF utf;
+    u32string dstr = utf.u8to32(str);
+    EXPECT_EQ(utf.errors, 1);
+    EXPECT_EQ(dstr, expect);
 }
 
 TEST(utf8errors, headAndLessBytes) {
     string str = "a\357\252b";
-    u32string expect{'a',0xfffd, 'b'};
+    u32string expect{'a', 0xfffd, 'b'};
     UTF utf;
     u32string dstr = utf.u8to32(str);
     EXPECT_EQ(utf.errors, 1);
@@ -256,7 +256,7 @@ TEST(utf8errors, headAndLessBytes) {
 
 TEST(utf8errors, twoHeads) {
     string str = "a\357\337b";
-    u32string expect{'a',0xfffd, 0xfffd, 'b'};
+    u32string expect{'a', 0xfffd, 0xfffd, 'b'};
     UTF utf;
     u32string dstr = utf.u8to32(str);
     EXPECT_EQ(utf.errors, 2);
@@ -265,13 +265,13 @@ TEST(utf8errors, twoHeads) {
 
 TEST(Find, len6) {
     string str = "a\375\200\201\202\203\204\205b";
-    const char *s = str.c_str()+1;
+    const char *s = str.c_str() + 1;
     UTF utf;
-    for (int i=0; i<6; i++) {
+    for (int i = 0; i < 6; i++) {
         const char *bs = utf.findUtf8(s + i, s);
         EXPECT_EQ(bs, s);
     }
-    for (int i=6; i<=7; i++) {
+    for (int i = 6; i <= 7; i++) {
         const char *bs = utf.findUtf8(s + i, s);
         EXPECT_EQ(bs, s + i);
     }
@@ -279,13 +279,13 @@ TEST(Find, len6) {
 
 TEST(Find, len4) {
     string str = "a\360\200\201\202\203\204\205b";
-    const char *s = str.c_str()+1;
+    const char *s = str.c_str() + 1;
     UTF utf;
-    for (int i=0; i<4; i++) {
+    for (int i = 0; i < 4; i++) {
         const char *bs = utf.findUtf8(s + i, s);
         EXPECT_EQ(bs, s);
     }
-    for (int i=4; i<=7; i++) {
+    for (int i = 4; i <= 7; i++) {
         const char *bs = utf.findUtf8(s + i, s);
         EXPECT_EQ(bs, s + i);
     }
@@ -294,16 +294,15 @@ TEST(Find, len4) {
 TEST(Len, simple) {
     string str = "bąk";
     UTF utf;
-    EXPECT_EQ(utf.getU32Len(str),3);
-    EXPECT_EQ(utf.getU16Len(str),3);
+    EXPECT_EQ(utf.getU32Len(str), 3);
+    EXPECT_EQ(utf.getU16Len(str), 3);
 }
-
 
 TEST(Ncodes, forback) {
     string str = "bąkαβγAδ";
     const char *s = str.c_str();
     const char *sstart = s;
-    const char *send = s+str.length();
+    const char *send = s + str.length();
     EXPECT_EQ(*send, 0);
     EXPECT_EQ(*s, 'b');
     int64_t actual;
@@ -311,7 +310,7 @@ TEST(Ncodes, forback) {
     s = utf.forwardNcodes(s, 2, send, actual);
     EXPECT_EQ(*s, 'k');
     EXPECT_EQ(actual, 2);
-    const char *sinside = s+2;
+    const char *sinside = s + 2;
     s = utf.forwardNcodes(s, 4, send, actual);
     EXPECT_EQ(*s, 'A');
     EXPECT_EQ(actual, 4);

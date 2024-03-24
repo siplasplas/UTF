@@ -43,7 +43,7 @@ u32string readTo32(string inFile, int inFormat) {
                 exit(1);
             }
             if (inFormat == 3)
-                for (char16_t &c: buffer)
+                for (char16_t &c : buffer)
                     c = UTF::swap16(c);
             return utf.u16to32(u16string_view(buffer.data(), buffer.size()));
         }
@@ -56,7 +56,7 @@ u32string readTo32(string inFile, int inFormat) {
                 exit(1);
             }
             if (inFormat == 5)
-                for (char32_t &c: buffer)
+                for (char32_t &c : buffer)
                     c = UTF::reverse32(c);
             u32string result;
             result = u32string_view(buffer.data(), buffer.size());
@@ -71,8 +71,7 @@ void saveTo(const u32string &u32, const string &outFile, int outFormat) {
     std::ofstream file(outFile, std::ios::binary);
     UTF utf;
     switch (outFormat) {
-        case 1:
-        {
+        case 1: {
             string u8 = utf.u32to8(u32);
             file.write(u8.c_str(), u8.size());
         }
